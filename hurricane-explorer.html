@@ -60,6 +60,12 @@ select,input[type=text],input[type=number]{width:100%;background:#0c1a2c;color:v
 .counter .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
 .counter .n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 .counter .l{font-size:12px;color:var(--mute);line-height:1.3}
+table.imp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+table.imp th{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--mute);font-weight:600;text-align:right;padding:4px 6px}
+table.imp td{padding:8px 6px;border-top:1px solid var(--line);text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.imp td:first-child{text-align:left;font-weight:500;font-size:13px;white-space:normal}
+table.imp td small{display:block;color:var(--mute);font-size:11px;margin-left:16px}
+table.imp .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
 .note{font-size:11.5px;color:var(--mute);line-height:1.45;margin-top:8px}
 .cities{list-style:none;padding:0;margin:6px 0 0;font-size:13px}
 .cities li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)}
@@ -167,19 +173,32 @@ a{color:var(--accent)}
     </section>
 
     <section id="t-impacts">
-      <h2>People at risk so far</h2>
-      <div class="counter"><div class="ic" style="background:#ff4a3d33">🌀</div><div><div class="n" id="cH">0</div><div class="l">in major cities hit by <b>hurricane-force</b> winds</div></div></div>
-      <div class="counter"><div class="ic" style="background:#ffd84a33">💨</div><div><div class="n" id="cT">0</div><div class="l">in major cities hit by <b>tropical-storm-force</b> winds</div></div></div>
-      <div class="counter"><div class="ic" style="background:#39d0ff33">🌧️</div><div><div class="n" id="cR">0</div><div class="l">in major cities with <b>100 mm+</b> of rain (model)</div></div></div>
-      <div class="counter"><div class="ic" style="background:#2f7dff33">🌊</div><div><div class="n" id="cS">–</div><div class="l">in cities below the <b>storm surge</b> (run the flood below)</div></div></div>
-      <h2>Worst-hit cities</h2>
+      <h2>People in large cities hit by the storm</h2>
+      <p class="body" style="margin-top:0">How many people live in large cities the storm has reached. The first column grows as you play the storm; the second is the storm’s whole life.</p>
+      <table class="imp">
+        <thead><tr><th></th><th id="impNow">So far</th><th>Whole storm</th></tr></thead>
+        <tbody>
+          <tr><td><span class="sw" style="background:#ff4a3d"></span><b>Hurricane winds</b><small>119 km/h or more</small></td><td id="cH">0</td><td id="cHall">–</td></tr>
+          <tr><td><span class="sw" style="background:#ffd84a"></span><b>Storm winds</b><small>63–118 km/h</small></td><td id="cT">0</td><td id="cTall">–</td></tr>
+          <tr><td><span class="sw" style="background:#39d0ff"></span><b>Heavy rain</b><small>100 mm or more (model)</small></td><td id="cR">0</td><td id="cRall">–</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Each city is counted once in the wind rows, by the strongest wind it felt. Heavy rain can fall on the same cities, so don’t add the rain row to the wind rows. Only the ~2,500 large cities in Esri’s World Cities layer are counted — towns and countryside are not, so real numbers are much higher.</p>
+      <h2>Worst-hit cities so far</h2>
       <ul class="cities" id="cityList"><li><span>–</span><span></span></li></ul>
-      <p class="note">Counts only people living in the cities in Esri’s World Cities layer (about 2,500 large cities), so real totals are much higher. Rural areas and small towns are not counted.</p>
-      <h2>Storm surge flood</h2>
-      <p class="body">Strong winds push the sea onto the land. Pick a surge height and flood the coast where the storm made landfall.</p>
+
+      <h2>Storm surge</h2>
+      <p class="body" style="margin-top:0">Strong winds and low air pressure push the sea up onto the land. This <b>storm surge</b> is often the deadliest part of a hurricane.</p>
+      <label class="k" for="lfSel" style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px">Where it came ashore</label>
+      <select id="lfSel" style="margin:4px 0 10px"><option>Checking the track for landfalls…</option></select>
+      <label class="k" style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px">How high the sea rises</label>
       <div class="row"><input type="range" id="surgeR" min="0.5" max="10" step="0.1" value="3" style="flex:1"><b id="surgeV" style="width:56px;text-align:right">3.0 m</b></div>
-      <div class="row" style="margin-top:8px"><button class="btn primary" id="surgeGo" style="flex:1">🌊 Flood the coast</button><button class="btn" id="surgeOff">Clear</button></div>
-      <p class="note" id="surgeNote">Starting height comes from the storm’s category at landfall. Real surges depend strongly on the shape of the coast and sea floor.</p>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="surgeGo" style="flex:1">🌊 Show storm surge</button><button class="btn" id="surgeOff">Clear</button></div>
+      <div id="surgeOut" style="display:none;margin-top:10px">
+        <div class="counter"><div class="ic" style="background:#2f7dff33">🌊</div><div><div class="n" id="cS">–</div><div class="l" id="cSl">of land under water</div></div></div>
+        <ul class="cities" id="surgeCities"></ul>
+      </div>
+      <p class="note" id="surgeNote">The starting height is typical for the storm’s strength at landfall. Clouds and rain are hidden while the surge is shown so you can see the coast.</p>
     </section>
 
     <section id="t-enso">
@@ -679,7 +698,9 @@ async function openStorm(st,blurb){
   setPlaying(false);
   const samples=M.buildSamples(st.pts);
   if(!samples.length){ loading(); alert("This storm has no usable track data yet."); return; }
-  S.storm=st; S.samples=samples; S.H=-1; S.landfall=-1; S.cities=[]; S.surge=null; surgeLayer.removeAll();
+  clearSurge();
+  S.storm=st; S.samples=samples; S.H=-1; S.landfall=-1; S.landfalls=[]; S.cities=[];
+  $('lfSel').innerHTML="<option>Checking the track for landfalls…</option>"; $('cHall').textContent=$('cTall').textContent=$('cRall').textContent="…";
   $('blurb').textContent=blurb||""; $('cS').textContent="–";
   // slider background = storm life coloured by category
   const n=samples.length; const stops=samples.filter((s,i)=>i%Math.max(1,Math.floor(n/60))===0||i===n-1).map(s=>`${s.cat.color} ${(s.i/(Math.max(1,n-1))*100).toFixed(1)}%`);
@@ -698,8 +719,9 @@ async function openStorm(st,blurb){
   flyToStart();
   loading();
   // async extras
-  detectLand().then(()=>{ updateUI(true); });
-  loadCities().then(()=>updateImpacts(true));
+  const pLand=detectLand().then(()=>{ updateUI(true); });
+  const pCity=loadCities().then(()=>updateImpacts(true));
+  Promise.all([pLand,pCity]).then(fillLandfalls);
   loadingTipFirst();
 }
 function loadingTipFirst(){ const s=S.samples[0]; if(s) $('tipTxt').textContent= s.hemi<0?"Southern Hemisphere storm: it spins clockwise. In the Northern Hemisphere storms spin anticlockwise — the Coriolis effect of Earth’s rotation.":"Press ▶ to play the storm. Warm ocean water (above about 26.5 °C) is a hurricane’s fuel."; }
@@ -729,14 +751,30 @@ async function detectLand(){
     const res=await map.ground.queryElevation(new Multipoint({points:pts,spatialReference:WGS84}),{demResolution:"auto"});
     const zs=res.geometry.points.map(p=>p[2]);
     S.samples.forEach((s,i)=>{ s.elev=zs[i]; s.land=Math.abs(zs[i])>0.3; });
-    let seaRun=0; S.landfall=-1;
-    for(let i=0;i<S.samples.length;i++){ const s=S.samples[i]; if(!s.land){seaRun++;continue;} if(seaRun>=3&&s.wind>=34){S.landfall=i;break;} seaRun=0; }
-    if(S.landfall<0){ // fall back: strongest point that touches land
-      let best=-1; S.samples.forEach((s,i)=>{ if(s.land&&(best<0||s.wind>S.samples[best].wind)) best=i; }); S.landfall=best; }
+    // every landfall = first land hour after 3+ hours over sea, with at least tropical-storm winds
+    let seaRun=0; S.landfalls=[];
+    for(let i=0;i<S.samples.length;i++){ const s=S.samples[i]; if(!s.land){seaRun++;continue;} if(seaRun>=3&&s.wind>=34) S.landfalls.push(i); seaRun=0; }
+    if(!S.landfalls.length){ let best=-1; S.samples.forEach((s,i)=>{ if(s.land&&(best<0||s.wind>S.samples[best].wind)) best=i; }); if(best>=0) S.landfalls.push(best); }
+    // default = the strongest landfall (e.g. Katrina's Gulf coast landfall, not its first one in Florida)
+    S.landfall=S.landfalls.length?S.landfalls.reduce((a,b)=>landfallWind(b)>landfallWind(a)?b:a):-1;
     $('camGround').disabled=S.landfall<0; $('surgeGo').disabled=S.landfall<0;
-    if(S.landfall>=0){ const w=Math.max(...S.samples.slice(Math.max(0,S.landfall-6),S.landfall+1).map(s=>s.wind)); $('surgeR').value=M.surgeFor(w); $('surgeV').textContent=(+$('surgeR').value).toFixed(1)+" m"; }
+    setSurgeDefault();
   }catch(e){ console.warn("Elevation query failed",e); }
 }
+// strength at landfall = strongest wind in the 6 hours before it crossed the coast
+function landfallWind(i){ return Math.max(...S.samples.slice(Math.max(0,i-6),i+1).map(s=>s.wind)); }
+function setSurgeDefault(){ if(S.landfall<0) return; $('surgeR').value=M.surgeFor(landfallWind(S.landfall)); $('surgeV').textContent=(+$('surgeR').value).toFixed(1)+" m"; }
+function fillLandfalls(){
+  const sel=$('lfSel'); sel.innerHTML="";
+  if(!S.landfalls||!S.landfalls.length){ sel.appendChild(new Option("This storm never reached land","")); sel.disabled=true; return; }
+  sel.disabled=false;
+  S.landfalls.forEach(i=>{ const s=S.samples[i];
+    let near=null,nd=1e9; for(const c of S.cities){ const d=M.haversine(c.lat,c.lon,s.lat,s.lon); if(d<nd){nd=d;near=c;} }
+    const where=near&&nd<400?`near ${near.name}, ${near.country}`:`${Math.abs(s.lat).toFixed(1)}°${s.lat>=0?"N":"S"} ${Math.abs(s.lon).toFixed(1)}°${s.lon>=0?"E":"W"}`;
+    const day=new Date(s.t).toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"UTC"});
+    sel.appendChild(new Option(`${where} — ${day}, ${M.catOf(landfallWind(i)).label.toLowerCase()}`,String(i),false,i===S.landfall)); });
+}
+$('lfSel').onchange=e=>{ const i=+e.target.value; if(!(i>=0)) return; S.landfall=i; setSurgeDefault(); if(S.surge) drawSurge(true); };
 
 // ---------- cities & people ----------
 async function loadCities(){
@@ -750,6 +788,9 @@ async function loadCities(){
         if(w>=34&&t34==null) t34=s.t; if(w>=64&&t64==null) t64=s.t; }
       return {name:a.CITY_NAME,country:a.CNTRY_NAME,pop:a.POP,lat:g.y,lon:g.x,t34,t64,peak,status:-1,graphic:null};
     }).filter(c=>c.peak>=20);
+    // whole-storm rain totals (separate grid run to the end, so the 'Whole storm' column is complete from the start)
+    const full=new M.RainGrid(smp); full.advanceTo(smp.length-1);
+    S.cities.forEach(c=>c.rainTotal=full.at(c.lat,c.lon));
     cityLayer.removeAll();
     const top=[...S.cities].sort((a,b)=>b.pop-a.pop).slice(0,14);
     S.cities.forEach(c=>{ c.labeled=top.includes(c); c.graphic=new Graphic({geometry:new Point({x:c.lon,y:c.lat,spatialReference:WGS84}),attributes:{name:c.name}}); cityLayer.add(c.graphic); });
@@ -764,20 +805,24 @@ function citySymbol(c,st){
   return {type:"point-3d",symbolLayers:layers,verticalOffset:c.labeled?{screenLength:18,maxWorldLength:60000,minWorldLength:0}:undefined,callout:c.labeled?{type:"line",size:0.8,color:[255,255,255,0.7]}:undefined};
 }
 function updateImpacts(force){
-  const t=S.t; let H=0,T=0,R=0; const hit=[];
+  const t=S.t; let H=0,T=0,R=0,Ha=0,Ta=0,Ra=0; const hit=[];
   for(const c of S.cities){
     const st=(c.t64!=null&&c.t64<=t)?2:(c.t34!=null&&c.t34<=t)?1:0;
-    if(st===2) H+=c.pop; if(st>=1) T+=c.pop;
+    if(st===2) H+=c.pop; else if(st===1) T+=c.pop;             // exclusive tiers: each city counted once
+    if(c.t64!=null) Ha+=c.pop; else if(c.t34!=null) Ta+=c.pop;
     const rain=S.rain?S.rain.at(c.lat,c.lon):0; if(rain>=100) R+=c.pop;
+    if(c.rainTotal>=100) Ra+=c.pop;
     if(st>0) hit.push({c,st,rain});
     if(c.graphic&&(force||st!==c.status)){ c.status=st; c.graphic.symbol=citySymbol(c,st); }
   }
   $('cH').textContent=fmtN(H); $('cT').textContent=fmtN(T); $('cR').textContent=fmtN(R);
+  $('cHall').textContent=fmtN(Ha); $('cTall').textContent=fmtN(Ta); $('cRall').textContent=fmtN(Ra);
+  $('impNow').textContent="By "+new Date(t).toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"UTC"});
   S.statsNow={H,T,R};
   hit.sort((a,b)=>b.st-a.st||b.c.pop-a.c.pop);
   $('cityList').innerHTML=hit.slice(0,6).map(h=>`<li><span>${h.st===2?"🔴":"🟡"} ${h.c.name}, ${h.c.country}</span><span>${fmtN(h.c.pop)} · ${Math.round(h.c.peak*M.KT_KMH)} km/h</span></li>`).join("")||`<li><span>No major cities hit yet</span><span></span></li>`;
 }
-function fmtN(n){ return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1)+" million":n>=1e3?Math.round(n/1e3)+" thousand":String(Math.round(n)); }
+function fmtN(n){ return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1)+" million":n>=1e3?Math.round(n/1e3)+" thousand":n>0?String(Math.round(n)):"0"; }
 
 // ---------- track ----------
 let trackGraphics=[];
@@ -967,30 +1012,62 @@ function updateWeather(s){
   $('tipTxt').innerHTML=`At the landfall point: modelled wind <b>${Math.round(w*M.KT_KMH)} km/h</b>, rain <b>${rate.toFixed(1)} mm per hour</b>.`;
 }
 
-// ---------- surge ----------
-$('surgeR').oninput=e=>{ $('surgeV').textContent=(+e.target.value).toFixed(1)+" m"; if(S.surge) drawSurge(false); };
+// ---------- storm surge ----------
+// While the surge is shown, clouds / rain / wind rings are hidden so the coast is visible; they come back on Clear.
+let surgeSeq=0;
+$('surgeR').oninput=e=>{ $('surgeV').textContent=(+e.target.value).toFixed(1)+" m"; };
+$('surgeR').onchange=()=>{ if(S.surge) drawSurge(false); };
 $('surgeGo').onclick=()=>drawSurge(true);
-$('surgeOff').onclick=()=>{ surgeLayer.removeAll(); S.surge=null; $('cS').textContent="–"; };
+$('surgeOff').onclick=()=>clearSurge();
+function setChip(name,on){ S.show[name]=on; const i=document.querySelector(`#chips input[data-l="${name}"]`); if(i) i.checked=on; }
+function hideForSurge(){
+  if(S.surgeHidden) return;
+  S.surgeHidden={storm:S.show.storm,rain:S.show.rain,wind:S.show.wind};
+  setChip('storm',false); setChip('rain',false); setChip('wind',false);
+  stormLayer.visible=false; rainLayer.visible=false; windLayer.removeAll();
+}
+function clearSurge(){
+  surgeSeq++; surgeLayer.removeAll(); S.surge=null; $('surgeOut').style.display='none';
+  if(S.surgeHidden){ const h=S.surgeHidden; S.surgeHidden=null;
+    setChip('storm',h.storm); setChip('rain',h.rain); setChip('wind',h.wind);
+    rainLayer.visible=h.rain; if(h.rain) updateRain(); updateWind(h.wind?curSample():null); updateStorm(curSample()); }
+  if(S.cam==="surge"){ S.cam="globe"; camButtons(); }
+}
 async function drawSurge(fly){
-  if(S.landfall<0) return; const L=S.samples[S.landfall], h=+$('surgeR').value;
-  const R=Math.min(130,Math.max(35,L.rmw*3.2)); const right=(L.heading+90*L.hemi)%360;
-  const [clon,clat]=M.offset(L.lat,L.lonU,R*0.45*Math.sin(right*Math.PI/180),R*0.45*Math.cos(right*Math.PI/180));
-  const circ=new Circle({center:new Point({x:M.normLon(clon),y:clat,spatialReference:WGS84}),radius:R,radiusUnit:"kilometers",geodesic:true,numberOfPoints:96});
-  const rings=circ.rings.map(r=>r.map(([x,y])=>[x,y,h]));
+  if(S.landfall<0) return; const seq=++surgeSeq;
+  const L=S.samples[S.landfall], h=+$('surgeR').value;
+  // surge is worst to the right of the track (N. Hemisphere) where winds blow onshore
+  const R=Math.min(130,Math.max(35,L.rmw*3.2)); const right=(L.heading+90*L.hemi+360)%360;
+  const [clon0,clat]=M.offset(L.lat,L.lonU,R*0.45*Math.sin(right*Math.PI/180),R*0.45*Math.cos(right*Math.PI/180)); const clon=M.normLon(clon0);
+  const circ=new Circle({center:new Point({x:clon,y:clat,spatialReference:WGS84}),radius:R,radiusUnit:"kilometers",geodesic:true,numberOfPoints:96});
   surgeLayer.removeAll();
-  surgeLayer.add(new Graphic({geometry:new Polygon({rings,hasZ:true,spatialReference:WGS84}),symbol:{type:"polygon-3d",symbolLayers:[{type:"water",waveDirection:L.heading,color:[40,120,170,0.9],waveStrength:"moderate",waterbodySize:"large"}]}}));
-  S.surge={center:[M.normLon(clon),clat],R,h};
-  if(fly){ setT(L.t,true); setCam("globe"); S.cam="surge"; camButtons();
-    view.goTo({position:{longitude:M.normLon(clon)+0,latitude:clat-R/111*0.9,z:R*1000*0.55},tilt:62,heading:0},{duration:2500}).catch(()=>{}); }
-  // flooded cities
-  const inside=S.cities.filter(c=>M.haversine(c.lat,c.lon,clat,M.normLon(clon))<=R);
-  if(!inside.length){ $('cS').textContent="0"; $('surgeNote').textContent="No large cities in the flood zone — but smaller towns and villages may be."; return; }
+  surgeLayer.add(new Graphic({geometry:new Polygon({rings:circ.rings.map(r=>r.map(([x,y])=>[x,y,h])),hasZ:true,spatialReference:WGS84}),
+    symbol:{type:"polygon-3d",symbolLayers:[{type:"water",waveDirection:L.heading,color:[40,120,170,0.9],waveStrength:"moderate",waterbodySize:"large"}]}}));
+  S.surge={center:[clon,clat],R,h};
+  hideForSurge();
+  if(fly){ setPlaying(false); setT(L.t,true); S.cam="surge"; camButtons();
+    // look from the sea towards the land, i.e. the way the storm was travelling
+    const W=Math.max(600,view.width||1200), zoom=Math.max(6,Math.min(11,Math.log2(40075*W/256/(R*2.4))));
+    view.goTo({center:[clon,clat],zoom,tilt:60,heading:L.heading},{duration:2500}).catch(()=>{}); }
+  // measure: sample the ground on a grid inside the circle; land = above 0.3 m, flooded = land below the surge height
+  $('surgeOut').style.display='block'; $('cS').textContent="…"; $('surgeCities').innerHTML="";
   try{
+    const pts=[], N=44;
+    for(let j=0;j<N;j++) for(let k=0;k<N;k++){ const e=(k+0.5)/N*2-1, n=(j+0.5)/N*2-1; if(e*e+n*n>1) continue; pts.push(M.offset(clat,clon,e*R,n*R)); }
+    const res=await map.ground.queryElevation(new Multipoint({points:pts,spatialReference:WGS84}));
+    if(seq!==surgeSeq) return;
+    const z=res.geometry.points.map(p=>p[2]); const land=z.filter(v=>v>0.3).length, wet=z.filter(v=>v>0.3&&v<h).length;
+    const areaKm=Math.PI*R*R, floodKm=wet/pts.length*areaKm;
+    $('cS').textContent=floodKm<1?"0 km²":`${Math.round(floodKm).toLocaleString("en-GB")} km²`;
+    $('cSl').innerHTML=land?`of land under water — <b>${Math.round(wet/land*100)}%</b> of the land in the blue circle is lower than ${h.toFixed(1)} m`:`— the circle is all sea`;
+    // cities: say how high each city centre is, instead of counting everyone who lives there
+    const inside=S.cities.filter(c=>M.haversine(c.lat,c.lon,clat,clon)<=R);
     if(inside.some(c=>c.elev==null)){ const r=await map.ground.queryElevation(new Multipoint({points:inside.map(c=>[c.lon,c.lat]),spatialReference:WGS84})); r.geometry.points.forEach((p,i)=>inside[i].elev=p[2]); }
-    const fl=inside.filter(c=>c.elev<h); const n=fl.reduce((a,c)=>a+c.pop,0);
-    $('cS').textContent=fmtN(n);
-    $('surgeNote').textContent=fl.length?`Below ${h.toFixed(1)} m: ${fl.map(c=>c.name).join(", ")} (city centre height). Real surges depend on the shape of the coast and sea floor.`:`City centres in this area sit above ${h.toFixed(1)} m — but low-lying neighbourhoods may still flood.`;
-  }catch(e){ console.warn(e); }
+    if(seq!==surgeSeq) return;
+    inside.sort((a,b)=>a.elev-b.elev);
+    $('surgeCities').innerHTML=inside.length?inside.slice(0,6).map(c=>`<li><span>${c.elev<h?"🌊":"⛰️"} ${c.name}</span><span>centre ${c.elev.toFixed(1)} m ${c.elev<h?"· floods":"· stays dry"}</span></li>`).join(""):`<li><span>No large cities in the circle — but smaller towns and villages may be</span><span></span></li>`;
+    $('surgeNote').textContent=`The blue circle is a simple “what if”: the sea rises ${h.toFixed(1)} m over the land nearest the landfall. Real surges depend on the shape of the coast and sea floor, and parts of a city can flood even when its centre stays dry.`;
+  }catch(e){ console.warn(e); if(seq===surgeSeq) $('cS').textContent="–"; }
 }
 
 // ---------- El Niño comparison ----------
