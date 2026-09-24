@@ -695,7 +695,7 @@ async function openStorm(st,blurb){
   rainElement.georeference=new ExtentAndRotationGeoreference({extent:new Extent({xmin:lonMin+shift,xmax:lonMax+shift,ymin:S.rain.latMin,ymax:S.rain.latMax,spatialReference:WGS84})});
   buildTrack(); buildStormGraphics(); buildSwaths();
   setT(samples[0].t,true);
-  flyToStorm();
+  flyToStart();
   loading();
   // async extras
   detectLand().then(()=>{ updateUI(true); });
@@ -704,12 +704,21 @@ async function openStorm(st,blurb){
 }
 function loadingTipFirst(){ const s=S.samples[0]; if(s) $('tipTxt').textContent= s.hemi<0?"Southern Hemisphere storm: it spins clockwise. In the Northern Hemisphere storms spin anticlockwise — the Coriolis effect of Earth’s rotation.":"Press ▶ to play the storm. Warm ocean water (above about 26.5 °C) is a hurricane’s fuel."; }
 
+// Globe button: frame the whole track (Esri centres the target itself, so tilt can't push it off-screen)
 function flyToStorm(){
-  const s=S.samples; let la0=90,la1=-90,lo0=1e9,lo1=-1e9; s.forEach(p=>{la0=Math.min(la0,p.lat);la1=Math.max(la1,p.lat);lo0=Math.min(lo0,p.lonU);lo1=Math.max(lo1,p.lonU);});
-  const span=Math.max(la1-la0,(lo1-lo0)*Math.cos((la0+la1)/2*Math.PI/180),8);
-  const alt=Math.min(18e6,Math.max(2.2e6,span*111e3*2.1));
+  const s=S.samples; if(!s.length) return;
   S.cam="globe"; camButtons(); view.environment.weather=new SunnyWeather({cloudCover:0});
-  view.goTo({position:{longitude:M.normLon((lo0+lo1)/2),latitude:(la0+la1)/2-span*0.35,z:alt},tilt:28,heading:0},{duration:2200}).catch(()=>{});
+  const line=new Polyline({paths:[s.filter((p,i)=>i%6===0||i===s.length-1).map(p=>[p.lon,p.lat])],spatialReference:WGS84});
+  view.goTo({target:line.extent.clone().expand(1.4),tilt:25,heading:0},{duration:2200}).catch(()=>{});
+}
+// When a storm is opened: centre on where it STARTS, zoomed so the whole storm fits, north up
+function flyToStart(){
+  const s=S.samples[0]; if(!s) return;
+  S.cam="globe"; camButtons(); view.environment.weather=new SunnyWeather({cloudCover:0});
+  const d=M.cloudDims(S.samples.reduce((a,b)=>b.wind>a.wind?b:a)); // size for the storm at its biggest, so it stays in view as it grows
+  const viewKm=Math.max(1600,d.rOuter*6), W=Math.max(600,view.width||1200);
+  const zoom=Math.max(3,Math.min(7,Math.log2(40075*W/256/viewKm)));
+  view.goTo({center:[s.lon,s.lat],zoom,tilt:35,heading:0},{duration:2200}).catch(()=>{});
 }
 
 // ---------- land detection & landfall ----------
@@ -833,7 +842,9 @@ function cloudTexture(){ if(!cloud.tex) cloud.tex=new MeshTexture({data:M.cloudT
 function cloudKey(s){ return [Math.round(s.wind/8),Math.round((s.r34||0)/30),s.hemi,Math.round(s.rmw/6)].join("|"); }
 function buildStormGraphics(){ stormLayer.removeAll(); cloud.graphics=[]; cloud.key=null; }
 function rebuildClouds(s){
-  const layers=M.cloudLayers(s,STORM_VE);
+  // debug: ?clouds=core,bands,cirrus shows only the named cloud layers
+  const only=new URLSearchParams(location.search).get("clouds");
+  const layers=M.cloudLayers(s,STORM_VE).filter(L=>!only||only.split(",").includes(L.name));
   const old=cloud.graphics; cloud.graphics=[];
   cloud.origin={lat:s.lat,lonU:s.lonU};
   for(const L of layers){
