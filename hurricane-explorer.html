@@ -60,6 +60,11 @@ select,input[type=text],input[type=number]{width:100%;background:#0c1a2c;color:v
 .counter .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
 .counter .n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 .counter .l{font-size:12px;color:var(--mute);line-height:1.3}
+.vtag{display:inline-block;font:600 10px/1.5 var(--font);letter-spacing:.3px;text-transform:none;color:var(--mute);border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:4px;vertical-align:middle}
+header h1 .vtag{font-size:11px;color:var(--accent);border-color:var(--accent)}
+table.vers td{font-size:12.5px;font-weight:500;white-space:normal}
+table.vers td:first-child{font-weight:700;white-space:nowrap}
+table.vers td small{margin-left:0}
 table.imp{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
 table.imp th{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--mute);font-weight:600;text-align:right;padding:4px 6px}
 table.imp td{padding:8px 6px;border-top:1px solid var(--line);text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -114,7 +119,7 @@ a{color:var(--accent)}
 
 <header class="glass">
   <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#1c8fff"/><stop offset="1" stop-color="#39d0ff"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0c1a2c" stroke="url(#lg)" stroke-width="3"/><path d="M32 12c-11 0-19 7-19 15 5-6 12-8 19-6-9 3-13 10-10 17 1-8 8-12 16-11-5 5-4 13 2 17-2-6 1-12 8-14-2 7 2 13 8 14-3-5-1-11 3-14-3-10-14-13-27-18z" fill="url(#lg)"/><circle cx="32" cy="32" r="3.5" fill="#0c1a2c"/></svg>
-  <div><h1>Hurricane Explorer 3D</h1><p>Follow real storms, see how they work, and who they affect</p></div>
+  <div><h1>Hurricane Explorer 3D <span class="vtag" data-ver="app" title="App version — see About for each model"></span></h1><p>Follow real storms, see how they work, and who they affect</p></div>
   <div class="spacer"></div>
   <button class="btn primary" id="vrBtn" title="Open the immersive 3D / VR view">🥽 VR &amp; 3D model</button>
 </header>
@@ -142,13 +147,13 @@ a{color:var(--accent)}
       </div>
       <div class="stats">
         <div class="stat"><div class="k">Wind (sustained)</div><div class="v" id="sWind">–</div></div>
-        <div class="stat"><div class="k">Air pressure</div><div class="v" id="sPres">–</div></div>
+        <div class="stat"><div class="k">Air pressure <span class="vtag" data-ver="track"></span></div><div class="v" id="sPres">–</div></div>
         <div class="stat"><div class="k">Moving</div><div class="v" id="sMove">–</div></div>
         <div class="stat"><div class="k">Over</div><div class="v" id="sOver">–</div></div>
       </div>
       <h2>Show</h2>
       <div class="chips" id="chips">
-        <label class="chip"><input type="checkbox" data-l="storm" checked><span class="dot"></span>3D storm</label>
+        <label class="chip"><input type="checkbox" data-l="storm" checked><span class="dot"></span>3D storm <span class="vtag" data-ver="clouds"></span></label>
         <label class="chip"><input type="checkbox" data-l="wind" checked><span class="dot"></span>Wind zones</label>
         <label class="chip"><input type="checkbox" data-l="swath" checked><span class="dot"></span>Wind swath</label>
         <label class="chip"><input type="checkbox" data-l="rain" checked><span class="dot"></span>Rainfall</label>
@@ -162,10 +167,10 @@ a{color:var(--accent)}
         <button class="btn" data-cam="follow">🎥 Follow</button>
         <button class="btn" data-cam="ground" id="camGround">🏠 Street level</button>
       </div>
-      <h2>Rainfall (model)</h2>
+      <h2>Rainfall (model) <span class="vtag" data-ver="rain"></span></h2>
       <div class="legend" id="rainLegend"></div>
       <div class="legendlbl"><span>25</span><span>50</span><span>100</span><span>200</span><span>300</span><span>500 mm+</span></div>
-      <h2>Wind zones</h2>
+      <h2>Wind zones (model) <span class="vtag" data-ver="wind"></span></h2>
       <div class="chips" style="font-size:12px">
         <span class="chip"><span class="dot" style="background:#ffd84a"></span>Tropical-storm winds 63+ km/h</span>
         <span class="chip"><span class="dot" style="background:#ff4a3d"></span>Hurricane winds 119+ km/h</span>
@@ -173,7 +178,7 @@ a{color:var(--accent)}
     </section>
 
     <section id="t-impacts">
-      <h2>People in large cities hit by the storm</h2>
+      <h2>People in large cities hit by the storm <span class="vtag" data-ver="people"></span></h2>
       <p class="body" style="margin-top:0">How many people live in large cities the storm has reached. The first column grows as you play the storm; the second is the storm’s whole life.</p>
       <table class="imp">
         <thead><tr><th></th><th id="impNow">So far</th><th>Whole storm</th></tr></thead>
@@ -187,11 +192,11 @@ a{color:var(--accent)}
       <h2>Worst-hit cities so far</h2>
       <ul class="cities" id="cityList"><li><span>–</span><span></span></li></ul>
 
-      <h2>Storm surge</h2>
+      <h2>Storm surge (model) <span class="vtag" data-ver="surge"></span></h2>
       <p class="body" style="margin-top:0">Strong winds and low air pressure push the sea up onto the land. This <b>storm surge</b> is often the deadliest part of a hurricane.</p>
       <label class="k" for="lfSel" style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px">Where it came ashore</label>
       <select id="lfSel" style="margin:4px 0 10px"><option>Checking the track for landfalls…</option></select>
-      <label class="k" style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px">How high the sea rises</label>
+      <label class="k" style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.8px">Highest surge (just right of landfall)</label>
       <div class="row"><input type="range" id="surgeR" min="0.5" max="10" step="0.1" value="3" style="flex:1"><b id="surgeV" style="width:56px;text-align:right">3.0 m</b></div>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="surgeGo" style="flex:1">🌊 Show storm surge</button><button class="btn" id="surgeOff">Clear</button></div>
       <div id="surgeOut" style="display:none;margin-top:10px">
@@ -228,6 +233,8 @@ a{color:var(--accent)}
       <b>Past storms:</b> Esri Living Atlas <i>Historical Hurricane Tracks</i> (NOAA IBTrACS, 1842–2024).<br>
       <b>People:</b> Esri <i>World Cities</i>.<br>
       <b>Globe:</b> ArcGIS World Imagery and World Elevation.</p>
+      <h2>Model versions</h2>
+      <table class="imp vers" id="verTable"></table>
       <h2>What is modelled (not measured)</h2>
       <p class="body"><b>Wind zones</b> use a simple wind-profile model from the storm’s top wind speed and latitude. <b>Rainfall</b> uses a simplified R-CLIPER-style model (rain depends on strength, size and forward speed); it shows the pattern, not exact totals — real extremes can be far higher (Harvey 2017 dropped over 1,500 mm). <b>Storm surge</b> is a “what if” flood at a chosen height: the sea spreads inland through any connected ground lower than that height (a “connected bathtub”), ignoring levees and sea walls. <b>3D cloud heights are stretched ×5</b> — a real hurricane is about 15 km tall but hundreds of km wide. The clouds are a model built from the storm’s strength and size, not a satellite picture.</p>
       <p class="body"><b>Air pressure</b> is the lowest pressure at the storm’s centre. Normal air pressure at sea level is about 1013 hPa; the lower the centre pressure, the stronger the storm. Official forecasts don’t predict pressure, so it shows “not forecast” on the dashed part of the track.</p>
@@ -559,19 +566,44 @@ a{color:var(--accent)}
   // z: ground heights on an nx*ny grid (row 0 = north); inside: 1 where the cell is in the surge zone.
   // Existing water (height ~0 in World Elevation) seeds the flood; it spreads to neighbouring cells lower than h.
   // Land below sea level (e.g. parts of New Orleans) floods too if connected — levees are ignored.
+  // h may be a single height or an array (surge height per cell).
   function floodMask(z,nx,ny,inside,h){
-    const n=nx*ny, water=new Uint8Array(n), wet=new Uint8Array(n), q=new Int32Array(n); let qh=0,qt=0;
-    for(let i=0;i<n;i++){ if(inside[i]&&Math.abs(z[i])<0.01){ water[i]=1; wet[i]=1; q[qt++]=i; } }
+    const n=nx*ny, H=typeof h==="number"?null:h, hv=i=>H?H[i]:h;
+    const water=new Uint8Array(n), wet=new Uint8Array(n), q=new Int32Array(n); let qh=0,qt=0,seas=0;
+    for(let i=0;i<n;i++){ if(inside[i]&&Math.abs(z[i])<0.01){ water[i]=1; seas++; if(hv(i)>0.05){ wet[i]=1; q[qt++]=i; } } }
     while(qh<qt){ const i=q[qh++], x=i%nx, y=(i-x)/nx;
       const nb=[x>0?i-1:-1, x<nx-1?i+1:-1, y>0?i-nx:-1, y<ny-1?i+nx:-1];
-      for(const j of nb){ if(j<0||wet[j]||!inside[j]) continue; if(z[j]<h){ wet[j]=1; q[qt++]=j; } } }
-    let flooded=0, land=0; const depth=new Float32Array(n).fill(NaN);
-    for(let i=0;i<n;i++){ if(!inside[i]||water[i]) continue; land++; if(wet[i]){ flooded++; depth[i]=h-z[i]; } }
-    return {depth,flooded,land,hasSea:qt>0&&water.some(v=>v)};
+      for(const j of nb){ if(j<0||wet[j]||!inside[j]) continue; if(z[j]<hv(j)){ wet[j]=1; q[qt++]=j; } } }
+    let flooded=0, land=0, maxD=0; const depth=new Float32Array(n).fill(NaN);
+    for(let i=0;i<n;i++){ if(!inside[i]||water[i]) continue; land++; if(wet[i]){ flooded++; depth[i]=hv(i)-z[i]; if(depth[i]>maxD) maxD=depth[i]; } }
+    return {depth,flooded,land,maxDepth:maxD,hasSea:seas>0};
   }
+  // Surge height field around a landfall (simple, for teaching):
+  // peaks at h0 about one eye-radius to the RIGHT of the track (N. Hemisphere; left in S.), tails off along the coast
+  // (longer on the right, where winds blow onshore) and fades inland. e,n = km east/north of the landfall point.
+  function surgeHeight(e,n,L,h0){
+    const hd=L.heading*Math.PI/180, fx=Math.sin(hd), fy=Math.cos(hd);   // forward (direction of travel)
+    const rx=fy*L.hemi, ry=-fx*L.hemi;                                     // right of track
+    const a=e*fx+n*fy, s=e*rx+n*ry;                                         // km ahead / km to the right
+    const rm=Math.max(20,L.rmw), Ls=s>=rm?Math.max(90,rm*4):Math.max(45,rm*1.6);
+    return h0*Math.exp(-(((s-rm)/Ls)**2))*Math.exp(-Math.max(0,a)/120);
+  }
+  function surgeExtentKm(L){ return Math.min(360,Math.max(160,Math.max(20,L.rmw)*7)); } // half-width of the modelled area
   function floodColor(d){ // depth in metres -> rgba
     if(d<1) return [120,215,255,190]; if(d<2) return [60,160,240,205]; if(d<4) return [30,100,220,215]; return [20,45,160,225]; }
-  G.HXM={R_EARTH,floodMask,floodColor,KT_KMH,KT_MPH,CATS,catOf,normLon,haversine,bearing,offset,rmwKm,radiusFor,windAt,rainParams,rainRate,surgeFor,buildSamples,RainGrid,rainColor,paintRain,stormShapes,cloudLayers,cloudDims,cloudTextureCanvas,RAIN_STOPS};
+  // ---- version register: bump the model's number whenever its maths or data handling changes ----
+  const VERSIONS={
+    app:    {v:"1.6", date:"2026-09-24", name:"Hurricane Explorer 3D"},
+    track:  {v:"1.1",  date:"2026-09-24", name:"Track & pressure data", what:"Hourly track from NHC/JTWC live feed or IBTrACS; ignores placeholder values (e.g. MSLP 9999); pressure only between real readings"},
+    wind:   {v:"1.0",  date:"2026-09-24", name:"Wind zones",            what:"Modified Rankine vortex; eye radius from Willoughby, Darling & Rahn (2006)"},
+    rain:   {v:"1.0",  date:"2026-09-24", name:"Rainfall",              what:"R-CLIPER-style radial rain profile (after Tuleya et al. 2007), summed hourly along the track"},
+    clouds: {v:"2.0",  date:"2026-09-24", name:"3D clouds",             what:"Three cloud-mesh layers (eyewall/core, spiral bands, cirrus outflow) spinning at different rates; heights ×5"},
+    people: {v:"2.0",  date:"2026-09-24", name:"People affected",       what:"Large-city populations (Esri World Cities); each city counted once by the strongest wind it felt"},
+    surge:  {v:"2.1",  date:"2026-09-24", name:"Storm surge",           what:"Surge height peaks right of the landfall and tails off along the coast and inland; connected-bathtub flood on a ground-height grid (Esri World Elevation); ignores levees and sea walls"},
+    vr:     {v:"1.0",  date:"2026-09-24", name:"VR globe & cut-away",   what:"Three.js + WebXR, Esri World Imagery; particle cloud cut-away showing inflow, updraft, outflow"}
+  };
+  const ver=k=>"v"+VERSIONS[k].v;
+  G.HXM={VERSIONS,ver,R_EARTH,floodMask,surgeHeight,surgeExtentKm,floodColor,KT_KMH,KT_MPH,CATS,catOf,normLon,haversine,bearing,offset,rmwKm,radiusFor,windAt,rainParams,rainRate,surgeFor,buildSamples,RainGrid,rainColor,paintRain,stormShapes,cloudLayers,cloudDims,cloudTextureCanvas,RAIN_STOPS};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 
@@ -1055,49 +1087,50 @@ function clearSurge(){
 const floodCanvas=document.createElement('canvas');
 async function drawSurge(fly){
   if(S.landfall<0) return; const seq=++surgeSeq;
-  const L=S.samples[S.landfall], h=+$('surgeR').value;
-  // surge is worst to the right of the track (N. Hemisphere; left in S. Hemisphere) where winds blow onshore
-  const R=Math.min(130,Math.max(35,L.rmw*3.2)); const right=(L.heading+90*L.hemi+360)%360;
-  const [clon0,clat]=M.offset(L.lat,L.lonU,R*0.45*Math.sin(right*Math.PI/180),R*0.45*Math.cos(right*Math.PI/180)); const clon=M.normLon(clon0);
-  // zone outline (dashed) instead of a flat sheet of water
-  const circ=new Circle({center:new Point({x:clon,y:clat,spatialReference:WGS84}),radius:R,radiusUnit:"kilometers",geodesic:true,numberOfPoints:96});
+  const L=S.samples[S.landfall], h0=+$('surgeR').value;
+  const W=M.surgeExtentKm(L), cosL=Math.cos(L.lat*Math.PI/180);
+  const dLat=W/111.32, dLon=W/(111.32*cosL), lon0=M.normLon(L.lonU)-dLon, lat0=L.lat+dLat;
+  const G=Math.min(420,Math.max(240,Math.round(2*W/1.2))), cellKm=2*W/G;
+  // mark where the surge is highest (about one eye-radius to the right of the track)
+  const rm=Math.max(20,L.rmw), rd=(L.heading+90*L.hemi+360)%360;
+  const [pk0,pkLat]=M.offset(L.lat,L.lonU,rm*Math.sin(rd*Math.PI/180),rm*Math.cos(rd*Math.PI/180));
   surgeLayer.removeAll();
-  surgeLayer.add(new Graphic({geometry:circ,symbol:{type:"simple-fill",color:[0,0,0,0],outline:{color:[120,215,255,0.95],width:2,style:"dash"}}}));
-  S.surge={center:[clon,clat],R,h};
+  surgeLayer.add(new Graphic({geometry:new Point({x:M.normLon(pk0),y:pkLat,spatialReference:WGS84}),
+    symbol:{type:"point-3d",symbolLayers:[{type:"icon",resource:{primitive:"circle"},size:10,material:{color:[255,255,255,1]},outline:{color:[20,45,160,1],size:2}},
+      {type:"text",text:`Highest surge ≈ ${h0.toFixed(1)} m`,size:12,material:{color:"white"},halo:{color:[10,30,80,0.9],size:1.5},verticalAlignment:"bottom"}],
+      verticalOffset:{screenLength:30},callout:{type:"line",size:1,color:[255,255,255,0.8]}}}));
+  S.surge={h0};
   hideForSurge();
   if(fly){ setPlaying(false); setT(L.t,true); S.cam="surge"; camButtons();
-    const W=Math.max(600,view.width||1200), zoom=Math.max(6,Math.min(11,Math.log2(40075*W/256/(R*2.4))));
-    view.goTo({center:[clon,clat],zoom,tilt:55,heading:L.heading},{duration:2500}).catch(()=>{}); }
-  $('surgeOut').style.display='block'; $('cS').textContent="…"; $('cSl').textContent="measuring the ground…"; $('surgeCities').innerHTML="";
+    const Wpx=Math.max(600,view.width||1200), zoom=Math.max(5,Math.min(10,Math.log2(40075*Wpx/256/(W*1.6))));
+    view.goTo({center:[M.normLon(pk0),pkLat],zoom,tilt:50,heading:L.heading},{duration:2500}).catch(()=>{}); }
+  $('surgeOut').style.display='block'; if(!S.surgeGrid){ $('cS').textContent="…"; $('cSl').textContent="measuring the ground…"; } $('surgeCities').innerHTML="";
   try{
-    // ground heights on a grid over the zone (~1 km cells)
-    const G=Math.min(220,Math.max(90,Math.round(R*2/1))), cosL=Math.cos(clat*Math.PI/180);
-    const dLat=R/111.32, dLon=R/(111.32*cosL), lat0=clat+dLat, lon0=clon-dLon;
-    const pts=[], inside=new Uint8Array(G*G);
-    for(let y=0;y<G;y++) for(let x=0;x<G;x++){ const e=((x+0.5)/G*2-1), n=(1-(y+0.5)/G*2); inside[y*G+x]=e*e+n*n<=1?1:0;
-      pts.push([lon0+(x+0.5)/G*2*dLon, lat0-(y+0.5)/G*2*dLat]); }
-    if(!S.surgeGrid||S.surgeGrid.key!==`${S.landfall}|${G}`){
-      const res=await map.ground.queryElevation(new Multipoint({points:pts,spatialReference:WGS84}),{demResolution:Math.max(30,Math.round(R*2000/G/2))});
+    const key=`${S.landfall}|${G}`;
+    if(!S.surgeGrid||S.surgeGrid.key!==key){
+      const pts=[]; for(let y=0;y<G;y++) for(let x=0;x<G;x++) pts.push([lon0+(x+0.5)/G*2*dLon, lat0-(y+0.5)/G*2*dLat]);
+      const res=await map.ground.queryElevation(new Multipoint({points:pts,spatialReference:WGS84}),{demResolution:Math.max(30,Math.round(cellKm*500))});
       if(seq!==surgeSeq) return;
-      S.surgeGrid={key:`${S.landfall}|${G}`,z:Float32Array.from(res.geometry.points.map(p=>p[2]))};
+      // surge-height shape for this landfall (scaled by the slider value, so the slider only rescales it)
+      const shape=new Float32Array(G*G);
+      for(let y=0;y<G;y++) for(let x=0;x<G;x++){ const e=((x+0.5)/G*2-1)*W, n=(1-(y+0.5)/G*2)*W; shape[y*G+x]=M.surgeHeight(e,n,L,1); }
+      S.surgeGrid={key,z:Float32Array.from(res.geometry.points.map(p=>p[2])),shape,inside:new Uint8Array(G*G).fill(1)};
     }
-    const z=S.surgeGrid.z, fm=M.floodMask(z,G,G,inside,h);
-    // paint flooded land, shaded by water depth
+    const g=S.surgeGrid, H=g.shape.map(v=>v*h0), fm=M.floodMask(g.z,G,G,g.inside,H);
     floodCanvas.width=floodCanvas.height=G; const ctx=floodCanvas.getContext('2d'), img=ctx.createImageData(G,G);
-    for(let i=0;i<G*G;i++){ const d=fm.depth[i]; if(isNaN(d)) continue; const c=M.floodColor(d); img.data.set(c,i*4); }
+    for(let i=0;i<G*G;i++){ const d=fm.depth[i]; if(isNaN(d)) continue; img.data.set(M.floodColor(d),i*4); }
     ctx.putImageData(img,0,0);
-    floodElement.georeference=new ExtentAndRotationGeoreference({extent:new Extent({xmin:lon0,xmax:clon+dLon,ymin:clat-dLat,ymax:lat0,spatialReference:WGS84})});
+    floodElement.georeference=new ExtentAndRotationGeoreference({extent:new Extent({xmin:lon0,xmax:lon0+2*dLon,ymin:L.lat-dLat,ymax:lat0,spatialReference:WGS84})});
     floodElement.image=floodCanvas.toDataURL(); floodLayer.visible=true;
-    const cellKm=(2*R/G)**2, floodKm=fm.flooded*cellKm;
-    if(!fm.hasSea){ $('cS').textContent="–"; $('cSl').textContent="No sea found in this zone, so nothing to flood. Try another landfall."; }
+    const floodKm=fm.flooded*cellKm*cellKm*1; // cells are ~square in km
+    if(!fm.hasSea){ $('cS').textContent="–"; $('cSl').textContent="No sea found near this landfall, so nothing to flood. Try another landfall."; }
     else{ $('cS').textContent=floodKm<1?"0 km²":`${Math.round(floodKm).toLocaleString("en-GB")} km²`;
-      $('cSl').innerHTML=`of land flooded — <b>${fm.land?Math.round(fm.flooded/fm.land*100):0}%</b> of the land inside the dashed circle`; }
-    // cities: is the city's own grid cell flooded?
-    const inZone=S.cities.filter(c=>M.haversine(c.lat,c.lon,clat,clon)<=R).map(c=>{
-      const x=Math.floor((c.lon-lon0)/(2*dLon)*G), y=Math.floor((lat0-c.lat)/(2*dLat)*G), i=y*G+x;
-      return {c,z:z[i],wet:i>=0&&i<G*G&&!isNaN(fm.depth[i]),d:fm.depth[i]}; }).sort((a,b)=>a.z-b.z);
-    $('surgeCities').innerHTML=inZone.length?inZone.slice(0,6).map(o=>`<li><span>${o.wet?"🌊":"⛰️"} ${o.c.name}</span><span>${o.wet?`under ~${o.d.toFixed(1)} m of water`:"centre stays dry"}</span></li>`).join(""):`<li><span>No large cities in the circle — smaller towns and villages may still flood</span><span></span></li>`;
-    $('surgeNote').innerHTML=`Blue = land the sea would cover if it rose <b>${h.toFixed(1)} m</b> (darker = deeper). The flood spreads inland from the sea through any connected ground lower than that. It ignores levees and sea walls, and real surges also depend on the shape of the coast and sea floor. Ground height: Esri World Elevation (~1 km grid here).`;
+      $('cSl').innerHTML=`of land flooded${fm.maxDepth>0?` — up to about <b>${fm.maxDepth.toFixed(1)} m</b> deep`:""}`; }
+    const inZone=S.cities.map(c=>{ const x=Math.floor((c.lon-lon0)/(2*dLon)*G), y=Math.floor((lat0-c.lat)/(2*dLat)*G);
+      if(x<0||y<0||x>=G||y>=G) return null; const i=y*G+x; return {c,wet:!isNaN(fm.depth[i]),d:fm.depth[i],hs:H[i]}; })
+      .filter(o=>o&&o.hs>0.3).sort((a,b)=>(b.wet-a.wet)||(b.c.pop-a.c.pop));
+    $('surgeCities').innerHTML=inZone.length?inZone.slice(0,6).map(o=>`<li><span>${o.wet?"🌊":"⛰️"} ${o.c.name}</span><span>${o.wet?`centre under ~${o.d.toFixed(1)} m`:`centre stays dry (surge ${o.hs.toFixed(1)} m)`}</span></li>`).join(""):`<li><span>No large cities near this coast — smaller towns and villages may still flood</span><span></span></li>`;
+    $('surgeNote').innerHTML=`Blue = land the sea would cover (darker = deeper). The surge is highest just to the <b>right</b> of where the storm came ashore${L.hemi<0?" (left in the Southern Hemisphere)":""}, where its winds blow onto the land, and gets lower along the coast and inland. The water spreads through any connected ground lower than the surge. Levees and sea walls are ignored; real surges also depend on the shape of the coast and sea floor. Ground heights: Esri World Elevation, ${cellKm.toFixed(1)} km grid.`;
   }catch(e){ console.warn(e); if(seq===surgeSeq){ $('cS').textContent="–"; $('cSl').textContent="Couldn’t read the ground heights."; } }
 }
 
@@ -1142,6 +1175,14 @@ function refreshAll(force){ S.H=-1; updateUI(true); updateStorm(curSample()); if
 
 // ---------- VR ----------
 $('vrBtn').onclick=()=>{ if(window.HXVR) window.HXVR.open(); else alert("The VR module is still loading — try again in a moment."); };
+
+// ---------- version labels (from the single register in the model script) ----------
+(function showVersions(){
+  const V=M.VERSIONS;
+  document.querySelectorAll('.vtag[data-ver]').forEach(el=>{ const k=el.dataset.ver; if(V[k]){ el.textContent=M.ver(k); el.title=(el.title||V[k].name)+` — ${M.ver(k)}, ${V[k].date}`; } });
+  $('verTable').innerHTML=Object.entries(V).map(([k,o])=>`<tr><td>${o.name}</td><td>v${o.v}<small>${o.date}</small>${o.what?`<small>${o.what}</small>`:""}</td></tr>`).join("");
+  console.info("Hurricane Explorer 3D",Object.fromEntries(Object.entries(V).map(([k,o])=>[k,"v"+o.v])));
+})();
 
 // ---------- start ----------
 (async()=>{
@@ -1325,7 +1366,7 @@ function buildModel(){
     sea:L('Ocean above 26.5 °C = fuel',-0.35,0.02,0.5,{size:32,w:0.24,color:'#7fe0c0'}),
     scale:L('Height stretched ×20',0.55,-0.02,-0.35,{size:28,w:0.16,color:'#9fb3cc'})
   };
-  const title=textSprite('Inside the storm (cut-away)',{size:40,w:0.34,color:'#39d0ff'}); title.position.set(0,MH*1.55,0); root.add(title);
+  const title=textSprite(`Inside the storm (cut-away) · VR ${window.HXM.ver('vr')}`,{size:40,w:0.4,color:'#39d0ff'}); title.position.set(0,MH*1.55,0); root.add(title);
   Object.assign(V,{mroot:root,clouds,P,pos,col,flow,FP,fpos,fcol,rain,RP,rpos});
 }
 
@@ -1354,6 +1395,8 @@ function drawHud(s){
   x.fillText(`People in major cities hit by hurricane-force winds so far: ${fmt(k.H||0)}`,30,225);
   x.fillStyle='#9fb3cc'; x.font='500 24px Segoe UI,system-ui';
   x.fillText(HX.S.playing?'▶ playing — trigger to pause':'❚❚ paused — pull trigger (or press space) to play',30,270);
+  x.textAlign='right'; x.fillStyle='#5f7590'; x.font='500 20px Segoe UI,system-ui';
+  x.fillText(`app ${HX.M.ver('app')} · VR ${HX.M.ver('vr')}`,c.width-28,40); x.textAlign='left';
   V.hudTex.needsUpdate=true;
 }
 function fmt(n){ return n>=1e6?(n/1e6).toFixed(1)+' million':n>=1e3?Math.round(n/1e3)+' thousand':String(Math.round(n)); }
