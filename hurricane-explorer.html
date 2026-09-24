@@ -210,7 +210,8 @@ a{color:var(--accent)}
       <b>People:</b> Esri <i>World Cities</i>.<br>
       <b>Globe:</b> ArcGIS World Imagery and World Elevation.</p>
       <h2>What is modelled (not measured)</h2>
-      <p class="body"><b>Wind zones</b> use a simple wind-profile model from the storm’s top wind speed and latitude. <b>Rainfall</b> uses a simplified R-CLIPER-style model (rain depends on strength, size and forward speed); it shows the pattern, not exact totals — real extremes can be far higher (Harvey 2017 dropped over 1,500 mm). <b>Storm surge</b> is a “what if” flood at a chosen height. <b>3D storm heights are stretched ×8</b> — a real hurricane is about 15 km tall but hundreds of km wide.</p>
+      <p class="body"><b>Wind zones</b> use a simple wind-profile model from the storm’s top wind speed and latitude. <b>Rainfall</b> uses a simplified R-CLIPER-style model (rain depends on strength, size and forward speed); it shows the pattern, not exact totals — real extremes can be far higher (Harvey 2017 dropped over 1,500 mm). <b>Storm surge</b> is a “what if” flood at a chosen height. <b>3D cloud heights are stretched ×5</b> — a real hurricane is about 15 km tall but hundreds of km wide. The clouds are a model built from the storm’s strength and size, not a satellite picture.</p>
+      <p class="body"><b>Air pressure</b> is the lowest pressure at the storm’s centre. Normal air pressure at sea level is about 1013 hPa; the lower the centre pressure, the stronger the storm. Official forecasts don’t predict pressure, so it shows “not forecast” on the dashed part of the track.</p>
       <p class="note">For learning only. For real warnings always use your national weather service.</p>
       <p class="note">A <a href="https://www.arcgis.com/apps/instant/atlas/index.html?appid=0cd1cdee853c413a84bfe4b9a6931f0d" target="_blank" rel="noopener">MapMaker</a> companion app.</p>
     </section>
@@ -313,10 +314,17 @@ a{color:var(--accent)}
     let pts=raw.filter(p=>isFinite(p.t)&&isFinite(p.lat)&&isFinite(p.lon)).sort((a,b)=>a.t-b.t);
     const ded=[]; for(const p of pts){ if(ded.length&&Math.abs(ded[ded.length-1].t-p.t)<60000) { if(p.wind>0&&!(ded[ded.length-1].wind>0)) ded[ded.length-1]=p; continue;} ded.push({...p}); }
     pts=ded; if(!pts.length) return [];
-    // fill missing wind/pressure by nearest valid
-    const fill=(key)=>{ let last=null; for(const p of pts){ if(p[key]>0) last=p[key]; else if(last!=null) p[key]=last; }
-      last=null; for(let i=pts.length-1;i>=0;i--){ if(pts[i][key]>0) last=pts[i][key]; else if(last!=null) pts[i][key]=last; } };
-    fill('wind'); fill('pres');
+    // Sanitise: feeds use sentinels for "no value" (e.g. MSLP 9999 on NHC/JTWC forecast points, -1/0 in IBTrACS).
+    for(const p of pts){
+      if(!(p.wind>=10&&p.wind<=250)) p.wind=null;
+      if(!(p.pres>=850&&p.pres<=1060)) p.pres=null;
+    }
+    // wind: fill gaps from the nearest valid value (the storm always has a wind speed)
+    { let last=null; for(const p of pts){ if(p.wind!=null) last=p.wind; else if(last!=null) p.wind=last; }
+      last=null; for(let i=pts.length-1;i>=0;i--){ if(pts[i].wind!=null) last=pts[i].wind; else if(last!=null) pts[i].wind=last; } }
+    // pressure: only interpolate BETWEEN two real readings — never invent values past the last one (forecasts don't give pressure)
+    { const idx=pts.map((p,i)=>p.pres!=null?i:-1).filter(i=>i>=0);
+      for(let k=0;k<idx.length-1;k++){ const a=idx[k],b=idx[k+1]; for(let i=a+1;i<b;i++){ const f=(pts[i].t-pts[a].t)/Math.max(1,pts[b].t-pts[a].t); pts[i].pres=pts[a].pres+(pts[b].pres-pts[a].pres)*f; } } }
     // unwrap longitudes
     let prev=pts[0].lon; for(const p of pts){ let l=p.lon; while(l-prev>180) l-=360; while(l-prev<-180) l+=360; p.lonU=l; prev=l; }
     const H=3600e3, out=[];
@@ -328,7 +336,8 @@ a{color:var(--accent)}
         while(j<pts.length-2&&pts[j+1].t<t) j++;
         const a=pts[j], b=pts[j+1]; const f=Math.min(1,Math.max(0,(t-a.t)/Math.max(1,b.t-a.t)));
         const L=(x,y)=>x==null||y==null?(x??y):x+(y-x)*f;
-        out.push({t,lat:L(a.lat,b.lat),lonU:L(a.lonU,b.lonU),wind:L(a.wind,b.wind)||0,pres:L(a.pres,b.pres),fc:f<0.5?!!a.fc:!!b.fc});
+        const P=(a.pres!=null&&b.pres!=null)?a.pres+(b.pres-a.pres)*f:(f<0.02?a.pres:f>0.98?b.pres:null);
+        out.push({t,lat:L(a.lat,b.lat),lonU:L(a.lonU,b.lonU),wind:L(a.wind,b.wind)||0,pres:P,fc:f<0.5?!!a.fc:!!b.fc});
         if(out.length>2400) break;
       }
     }
@@ -431,7 +440,103 @@ a{color:var(--accent)}
     }
     return shapes;
   }
-  G.HXM={R_EARTH,KT_KMH,KT_MPH,CATS,catOf,normLon,haversine,bearing,offset,rmwKm,radiusFor,windAt,rainParams,rainRate,surgeFor,buildSamples,RainGrid,rainColor,paintRain,stormShapes,RAIN_STOPS};
+  // ---- 3D cloud meshes: three rigid layers that spin at different rates around the eye ----
+  // Positions are local metres (x east, y north, z up) around the storm centre. Heights are exaggerated by VE.
+  function hash2(x,y){ const s=Math.sin(x*127.1+y*311.7)*43758.5453; return s-Math.floor(s); }
+  function vnoise(x,y){ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+    const a=hash2(xi,yi),b=hash2(xi+1,yi),c=hash2(xi,yi+1),d=hash2(xi+1,yi+1); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; }
+  function fbm(x,y){ return 0.55*vnoise(x,y)+0.3*vnoise(x*2.1+5.3,y*2.1+1.7)+0.15*vnoise(x*4.3+9.1,y*4.3+3.3); }
+  const clamp01=x=>x<0?0:x>1?1:x, smoothstep=(a,b,x)=>{const t=clamp01((x-a)/(b-a));return t*t*(3-2*t);};
+  // polar grid: radii[] (km), nSeg, fn(rKm,theta)->{z (m), a (0-1), c (0-255)} ; cull(quad alphas) removes empty quads
+  function polarGrid(radii,nSeg,fn,minA){
+    const nR=radii.length, nV=nR*(nSeg+1);
+    const pos=new Float64Array(nV*3), uv=new Float32Array(nV*2), col=new Uint8Array(nV*4), A=new Float32Array(nV);
+    let v=0;
+    for(let i=0;i<nR;i++){ const r=radii[i];
+      for(let j=0;j<=nSeg;j++,v++){ const th=j/nSeg*2*Math.PI, x=r*Math.cos(th), y=r*Math.sin(th), o=fn(r,th,x,y);
+        const drop=(r*1000)**2/(2*R_EARTH*1000); // keep the sheet on the curved Earth
+        pos[v*3]=x*1000; pos[v*3+1]=y*1000; pos[v*3+2]=o.z-drop;
+        uv[v*2]=x/60; uv[v*2+1]=y/60;
+        col[v*4]=col[v*4+1]=o.c; col[v*4+2]=Math.min(255,o.c+6); col[v*4+3]=Math.round(clamp01(o.a)*255); A[v]=o.a; } }
+    const f=[];
+    for(let i=0;i<nR-1;i++) for(let j=0;j<nSeg;j++){
+      const a=i*(nSeg+1)+j, b=a+1, c=a+nSeg+1, d=c+1;
+      if(Math.max(A[a],A[b],A[c],A[d])<minA) continue;
+      f.push(a,c,b, b,c,d); }
+    return {position:pos,uv,color:col,faces:new Uint32Array(f)};
+  }
+  const geomRadii=(r0,r1,n,pow)=>Array.from({length:n},(_,i)=>r0+(r1-r0)*Math.pow(i/(n-1),pow||1));
+  function cloudDims(s){
+    const strong=s.wind>=64;
+    return { strong,
+      rEye: strong?Math.max(16,s.rmw*1.0):0,
+      rWall: Math.max(30,s.rmw*1.7),
+      rOuter: Math.max(Math.max(30,s.rmw*1.7)*3.2,Math.min(750,(s.r34||s.rmw*4)*1.35)),
+      top: 15000*Math.min(1,0.5+s.wind/280) }; // m, real cloud-top height
+  }
+  function cloudLayers(s,VE){
+    const d=cloudDims(s), h=s.hemi, K=1.7, VEh=VE, Htop=d.top*VEh;
+    const layers=[];
+    // 1) Core: eyewall + central dense overcast (fast spin). Eye = hole with a sloping 'stadium' wall.
+    const rCore=Math.min(d.rOuter*0.62,d.rWall*4);
+    let radii=[];
+    if(d.rEye>0){ for(let k=0;k<=8;k++) radii.push(d.rEye*(0.45+0.55*k/8)); }
+    else radii.push(0.5);
+    radii=radii.concat(geomRadii(Math.max(d.rEye,1)*1.02+0.5,rCore,22,1.15));
+    const eyeTopR=d.rEye;
+    layers.push({name:"core",spin:1,...polarGrid(radii,144,(r,th,x,y)=>{
+      const n=fbm(x/22+3,y/22+7);
+      let z,a=1,c=246;
+      if(d.rEye>0&&r<eyeTopR){ const t=(r-eyeTopR*0.45)/(eyeTopR*0.55); z=VEh*900+(Htop*0.93-VEh*900)*Math.pow(clamp01(t),1.6); c=165+Math.round(70*t)+Math.round(15*n); } // sloping 'stadium' eyewall, shaded
+      else if(r<=d.rWall){ z=Htop*(0.9+0.08*(r-eyeTopR)/Math.max(1,d.rWall-eyeTopR))+Htop*0.05*n; }
+      else { const u=(r-d.rWall)/(rCore-d.rWall);
+        const arm=0.5+0.5*Math.cos(3*(th+h*1.7*Math.log(r/d.rWall))); // spiral texture in the dense overcast too
+        z=Htop*(0.98-0.5*u*u)+Htop*0.08*(n-0.5)+Htop*0.06*arm*u; a=(1-smoothstep(0.45,1,u))*(0.75+0.25*arm); c=232+Math.round(20*n); }
+      if(!d.strong){ z*=0.75; a*=0.92; }
+      return {z,a,c};
+    },0.02)});
+    // 2) Spiral rain bands (slower spin). Arms trail backwards: theta = const - h*K*ln r.
+    const r0=d.rWall*1.05;
+    layers.push({name:"bands",spin:0.45,...polarGrid(geomRadii(r0,d.rOuter,40,1.25),200,(r,th,x,y)=>{
+      const rn=(r-r0)/(d.rOuter-r0);
+      const ph=th+h*K*Math.log(r/r0);
+      // two main bands + weaker secondary ones, with strength varying along each band (less 'pinwheel')
+      const cp=Math.cos(ph), sp=Math.sin(ph); // periodic in ph -> no seam where the circle closes
+      const arm=Math.max(Math.pow(0.5+0.5*Math.cos(2*ph),1.6)*(0.7+0.5*vnoise(4+1.6*cp,2+1.6*sp+rn*3)),
+                         0.7*Math.pow(0.5+0.5*Math.cos(5*ph+1.3),3));
+      const n=fbm(x/35+11,y/35+2);
+      const reach=0.75+0.35*vnoise(7+1.2*cp,5+1.2*sp); // bands end at different distances
+      let D=arm*(0.4+0.85*n)*(1-smoothstep(reach*0.6,reach,rn))+(1-smoothstep(0,0.35,rn))*0.6*(0.6+0.6*n)+0.08*n;
+      D=clamp01(D);
+      const z=VEh*1400+D*Htop*0.62*(1-0.45*rn);
+      return {z,a:clamp01((D-0.12)*2.1)*0.96,c:200+Math.round(52*D)};
+    },0.05)});
+    // 3) High cirrus outflow — spreads out and turns the OTHER way at the top of the storm (slow).
+    if(d.strong||s.wind>=45){
+      const c0=d.rWall*1.9, c1=d.rOuter*0.95;
+      layers.push({name:"cirrus",spin:-0.12,...polarGrid(geomRadii(c0,c1,18,1),120,(r,th,x,y)=>{
+        const rn=(r-c0)/(c1-c0);
+        const st=0.5+0.5*Math.cos(3*(th-h*0.9*Math.log(r/c0)));
+        const n=fbm(x/60+21,y/60+4);
+        const a=0.32*st*(0.5+0.7*n)*smoothstep(0,0.18,rn)*(1-smoothstep(0.55,1,rn));
+        return {z:Htop*(1.02-0.12*rn),a,c:255};
+      },0.04)});
+    }
+    return layers;
+  }
+  // isotropic cloud-detail texture (tiles; direction-free so texture orientation can't flip the spiral)
+  function cloudTextureCanvas(size){
+    const c=(typeof document!=='undefined')?document.createElement('canvas'):null; if(!c) return null;
+    c.width=c.height=size; const ctx=c.getContext('2d'), img=ctx.createImageData(size,size), d=img.data, f=8/size;
+    for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+      // tileable noise: blend 4 shifted samples
+      const u=x/size,v=y/size;
+      const s=(fx,fy)=>fbm(fx*f*size/2,fy*f*size/2);
+      const n=s(u,v)*(1-u)*(1-v)+s(u-1,v)*u*(1-v)+s(u,v-1)*(1-u)*v+s(u-1,v-1)*u*v;
+      const g=Math.round(175+80*Math.pow(n,0.8)); const i=(y*size+x)*4; d[i]=d[i+1]=g; d[i+2]=Math.min(255,g+8); d[i+3]=255; }
+    ctx.putImageData(img,0,0); return c;
+  }
+  G.HXM={R_EARTH,KT_KMH,KT_MPH,CATS,catOf,normLon,haversine,bearing,offset,rmwKm,radiusFor,windAt,rainParams,rainRate,surgeFor,buildSamples,RainGrid,rainColor,paintRain,stormShapes,cloudLayers,cloudDims,cloudTextureCanvas,RAIN_STOPS};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 
@@ -441,9 +546,12 @@ require([
   "esri/Map","esri/views/SceneView","esri/layers/GraphicsLayer","esri/layers/FeatureLayer","esri/Graphic",
   "esri/geometry/Point","esri/geometry/Polyline","esri/geometry/Polygon","esri/geometry/Circle","esri/geometry/Multipoint","esri/geometry/Extent",
   "esri/rest/query","esri/layers/MediaLayer","esri/layers/support/ImageElement","esri/layers/support/ExtentAndRotationGeoreference",
-  "esri/geometry/operators/unionOperator","esri/views/3d/environment/RainyWeather","esri/views/3d/environment/SunnyWeather"
+  "esri/geometry/operators/unionOperator","esri/views/3d/environment/RainyWeather","esri/views/3d/environment/SunnyWeather",
+  "esri/geometry/Mesh","esri/geometry/support/MeshComponent","esri/geometry/support/MeshMaterial","esri/geometry/support/MeshTexture",
+  "esri/geometry/support/MeshTransform","esri/geometry/support/MeshLocalVertexSpace"
 ],(Map,SceneView,GraphicsLayer,FeatureLayer,Graphic,Point,Polyline,Polygon,Circle,Multipoint,Extent,
-   query,MediaLayer,ImageElement,ExtentAndRotationGeoreference,unionOperator,RainyWeather,SunnyWeather)=>{
+   query,MediaLayer,ImageElement,ExtentAndRotationGeoreference,unionOperator,RainyWeather,SunnyWeather,
+   Mesh,MeshComponent,MeshMaterial,MeshTexture,MeshTransform,MeshLocalVertexSpace)=>{
 
 const M=window.HXM;
 const URL_LIVE="https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Active_Hurricanes_v1/FeatureServer";
@@ -713,24 +821,52 @@ function updateWind(s){
   const ring=(r,fill,line,w)=>r>0&&windLayer.add(new Graphic({geometry:new Circle({center:ctr,radius:r,radiusUnit:"kilometers",geodesic:true,numberOfPoints:72}),symbol:{type:"simple-fill",color:fill,outline:{color:line,width:w}}}));
   ring(s.r34,[255,216,74,0.16],[255,216,74,1],2);
   ring(s.r64,[255,74,61,0.28],[255,74,61,1],2.4);
-  if(s.wind>=64&&s.rmw) ring(s.rmw*0.55,[20,40,70,0.55],[255,255,255,0.9],1);
+  if(s.wind>=64&&s.rmw) ring(s.rmw*0.55,[0,0,0,0],[255,255,255,0.6],1);
 }
 
-// ---------- 3D storm ----------
-let stormGraphics=[];
-function stormSym(kind,h){ return {type:"polygon-3d",symbolLayers:[{type:"extrude",size:h,material:{color:kind==="wall"?[255,255,255,0.72]:[235,242,255,0.55]},edges:{type:"solid",color:[255,255,255,kind==="wall"?0.95:0.75],size:0.7}}]}; }
-function buildStormGraphics(){ stormLayer.removeAll(); stormGraphics=[]; }
+// ---------- 3D storm: textured cloud meshes spinning around the eye ----------
+// Three layers (core+eyewall, spiral rain bands, high cirrus outflow) spin at different rates via MeshTransform,
+// so nothing is rebuilt per frame. Geometry is rebuilt only when the storm's structure changes or it drifts far.
+const STORM_VE=5;
+const cloud={key:null,origin:null,graphics:[],tex:null};
+function cloudTexture(){ if(!cloud.tex) cloud.tex=new MeshTexture({data:M.cloudTextureCanvas(256),wrap:"repeat"}); return cloud.tex; }
+function cloudKey(s){ return [Math.round(s.wind/8),Math.round((s.r34||0)/30),s.hemi,Math.round(s.rmw/6)].join("|"); }
+function buildStormGraphics(){ stormLayer.removeAll(); cloud.graphics=[]; cloud.key=null; }
+function rebuildClouds(s){
+  const layers=M.cloudLayers(s,STORM_VE);
+  const old=cloud.graphics; cloud.graphics=[];
+  cloud.origin={lat:s.lat,lonU:s.lonU};
+  for(const L of layers){
+    const prev=old.find(g=>g.layerName===L.name);
+    const mesh=new Mesh({
+      vertexSpace:new MeshLocalVertexSpace({origin:[M.normLon(s.lonU),s.lat,0]}),
+      vertexAttributes:{position:L.position,uv:L.uv,color:L.color},
+      components:[new MeshComponent({faces:L.faces,shading:"smooth",material:new MeshMaterial({colorTexture:cloudTexture(),alphaMode:"blend",doubleSided:true})})],
+      spatialReference:WGS84,
+      transform:new MeshTransform({rotationAxis:[0,0,1],rotationAngle:prev?prev.angle:0,translation:[0,0,0]})
+    });
+    const g=new Graphic({geometry:mesh,symbol:{type:"mesh-3d",symbolLayers:[{type:"fill"}]}});
+    g.layerName=L.name; g.spin=L.spin; g.angle=prev?prev.angle:Math.random()*360;
+    cloud.graphics.push(g);
+  }
+  stormLayer.removeMany(old); stormLayer.addMany(cloud.graphics);
+  cloud.key=cloudKey(s);
+}
 function updateStorm(s){
   if(!s||!S.show.storm||S.cam==="ground"){ stormLayer.visible=false; return; }
   stormLayer.visible=true;
-  const shapes=M.stormShapes(s,S.spin), VE=8;
-  while(stormGraphics.length<shapes.length){ const g=new Graphic(); stormGraphics.push(g); stormLayer.add(g); }
-  shapes.forEach((sh,k)=>{ const g=stormGraphics[k];
-    const rings=sh.rings.map(r=>r.map(([x,y])=>[M.normLon(x),y,sh.base*VE]));
-    g.geometry=new Polygon({rings,hasZ:true,spatialReference:WGS84});
-    const hh=Math.round(sh.height*VE/500)*500; if(g._h!==hh||g._k!==sh.kind){ g._h=hh; g._k=sh.kind; g.symbol=stormSym(sh.kind,hh); }
-    g.visible=true; });
-  for(let k=shapes.length;k<stormGraphics.length;k++) stormGraphics[k].visible=false;
+  const o=cloud.origin, far=o&&M.haversine(o.lat,o.lonU,s.lat,s.lonU)>220;
+  if(!cloud.graphics.length||cloudKey(s)!==cloud.key||far) rebuildClouds(s);
+}
+function animateClouds(s,dt){
+  if(!s||!stormLayer.visible||!cloud.graphics.length) return;
+  const o=cloud.origin, cosL=Math.cos(o.lat*Math.PI/180);
+  const e=(s.lonU-o.lonU)*111320*cosL, n=(s.lat-o.lat)*111320, drop=-(e*e+n*n)/(2*M.R_EARTH*1000);
+  const base=(12+s.wind*0.22)*s.hemi; // deg/s: Northern Hemisphere = anticlockwise from above
+  for(const g of cloud.graphics){
+    g.angle=(g.angle+base*g.spin*dt)%360;
+    g.geometry.transform=new MeshTransform({rotationAxis:[0,0,1],rotationAngle:g.angle,translation:[e,n,drop]});
+  }
 }
 
 // ---------- rain ----------
@@ -758,7 +894,7 @@ function updateUI(force){
     const c=s.cat; const b=$('badge'); b.style.background=c.color; b.innerHTML=`<b>${c.short}</b><small>${c.n>=1?"category":c.n===0?"storm":"depr."}</small>`;
     $('nowName').textContent=`${S.storm.name}${S.storm.year?" "+S.storm.year:""}`; $('nowCat').textContent=c.label;
     $('sWind').innerHTML=`${Math.round(s.wind*M.KT_KMH)} <small>km/h · ${Math.round(s.wind*M.KT_MPH)} mph</small>`;
-    $('sPres').innerHTML=s.pres?`${Math.round(s.pres)} <small>hPa</small>`:"–";
+    $('sPres').innerHTML=s.pres?`${Math.round(s.pres)} <small>hPa</small>`:`<small>${s.fc?"not forecast":"no reading"}</small>`;
     $('sMove').innerHTML=`${Math.round(s.speed)} <small>km/h ${compass(s.heading)}</small>`;
     $('sOver').textContent=s.land==null?"…":s.land?"Land":"Ocean";
     const d=new Date(s.t); $('tlTime').textContent=d.toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"UTC"})+" UTC";
@@ -877,8 +1013,8 @@ function frame(now){
   const dt=Math.min(0.1,(now-last)/1000); last=now;
   if(!S.vrOpen){
     advance(dt);
-    S.spin+=dt*(0.25+(curSample()?.wind||0)/90)*(curSample()?.hemi||1);
-    if(now-lastStorm>66){ lastStorm=now; updateStorm(curSample()); }
+    if(now-lastStorm>100){ lastStorm=now; updateStorm(curSample()); }
+    animateClouds(curSample(),dt);
     if(S.cam==="follow"&&S.playing&&now-S.lastFollow>1200){ S.lastFollow=now; follow(false); }
   }
   requestAnimationFrame(frame);
