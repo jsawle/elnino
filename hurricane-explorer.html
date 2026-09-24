@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Hurricane Explorer 3D</title>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<link rel="stylesheet" href="https://js.arcgis.com/4.34/esri/themes/dark/main.css">
+<script src="https://js.arcgis.com/4.34/"></script>
+<style>
+:root{
+  --bg:rgba(9,18,32,.84); --bg2:rgba(20,34,56,.9); --line:rgba(140,190,255,.18);
+  --ink:#e9f2ff; --mute:#9fb3cc; --accent:#39d0ff; --hot:#ff5a4e; --ok:#43d17a;
+  --r:14px; --font:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#02060c;color:var(--ink);font-family:var(--font);overflow:hidden}
+#viewDiv{position:absolute;inset:0}
+.glass{background:var(--bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+header{position:absolute;top:12px;left:12px;right:396px;display:flex;align-items:center;gap:12px;padding:10px 14px;pointer-events:auto}
+header .logo{width:38px;height:38px;flex:none}
+header h1{font-size:19px;margin:0;letter-spacing:.3px;font-weight:700}
+header p{margin:2px 0 0;font-size:12.5px;color:var(--mute)}
+header .spacer{flex:1}
+.btn{appearance:none;border:1px solid var(--line);background:var(--bg2);color:var(--ink);border-radius:999px;padding:8px 14px;font:600 13px var(--font);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,#1c8fff,#39d0ff);border:none;color:#021120}
+.btn.on{background:var(--accent);color:#021120;border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#panel{position:absolute;top:12px;right:12px;bottom:12px;width:372px;display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;background:none;border:none;color:var(--mute);padding:12px 4px;font:600 13px var(--font);cursor:pointer;border-bottom:2px solid transparent}
+.tabs button.act{color:var(--ink);border-bottom-color:var(--accent)}
+.tabbody{flex:1;overflow:auto;padding:14px}
+.tabbody section{display:none}.tabbody section.act{display:block}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mute);margin:16px 0 8px}
+h2:first-child{margin-top:0}
+select,input[type=text],input[type=number]{width:100%;background:#0c1a2c;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:14px var(--font)}
+.row{display:flex;gap:8px;align-items:center}
+.blurb{font-size:13px;line-height:1.45;color:#cfe0f5;margin:10px 0 0}
+.now{display:flex;gap:12px;align-items:center;margin-top:12px}
+.badge{width:64px;height:64px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#10141c;font-weight:800;flex:none;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}
+.badge b{font-size:26px;line-height:1}.badge small{font-size:9.5px;text-transform:uppercase;letter-spacing:.6px}
+.nowtxt .nm{font-size:18px;font-weight:700}.nowtxt .dt{font-size:12.5px;color:var(--mute)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat{background:#0c1a2c;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--mute)}
+.stat .v{font-size:17px;font-weight:700;margin-top:2px}.stat .v small{font-size:11.5px;color:var(--mute);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12.5px;cursor:pointer;user-select:none;background:#0c1a2c}
+.chip input{display:none}.chip .dot{width:9px;height:9px;border-radius:50%;background:#44546b}
+.chip:has(input:checked){border-color:var(--accent)}.chip:has(input:checked) .dot{background:var(--accent)}
+.seg{display:flex;gap:6px}.seg .btn{flex:1;padding:8px 6px;font-size:12.5px}
+.counter{display:flex;align-items:center;gap:10px;background:#0c1a2c;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.counter .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.counter .n{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.counter .l{font-size:12px;color:var(--mute);line-height:1.3}
+.note{font-size:11.5px;color:var(--mute);line-height:1.45;margin-top:8px}
+.cities{list-style:none;padding:0;margin:6px 0 0;font-size:13px}
+.cities li{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)}
+.cities li span:last-child{color:var(--mute);font-variant-numeric:tabular-nums}
+.bars{font-size:12px}.bars .b{display:grid;grid-template-columns:92px 1fr 1fr;gap:6px;align-items:center;margin:4px 0}
+.bars .bar{height:14px;border-radius:4px;display:flex;align-items:center;padding-left:4px;font-size:10.5px;font-weight:700;color:#081018;min-width:18px}
+.bars .hd{color:var(--mute);font-size:11px}
+.legend{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:6px}
+.legend span{flex:1}
+.legendlbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mute);margin-top:3px}
+p.body{font-size:13px;line-height:1.5;color:#cfe0f5}
+a{color:var(--accent)}
+#timeline{position:absolute;left:12px;right:396px;bottom:12px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+#playBtn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#1c8fff,#39d0ff);color:#021120;font-size:18px;cursor:pointer;flex:none}
+#tlMid{flex:1;min-width:0}
+#tlTop{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px;gap:8px}
+#tlTime{font-weight:700}#tlTag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#ffd24a;color:#1a1400;display:none}
+#slider{-webkit-appearance:none;appearance:none;width:100%;height:12px;border-radius:6px;background:#223;outline:none}
+#slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #0b1624;box-shadow:0 0 0 2px #fff;cursor:pointer}
+#slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #0b1624;cursor:pointer}
+#speed{width:auto;padding:6px 8px;font-size:12.5px}
+#tip{position:absolute;left:12px;bottom:90px;max-width:420px;padding:12px 14px;font-size:13.5px;line-height:1.45;display:flex;gap:10px}
+#tip .i{font-size:20px}
+#banner{position:absolute;top:84px;left:50%;transform:translateX(-50%);padding:10px 22px;font-weight:800;font-size:22px;letter-spacing:3px;color:#fff;background:rgba(255,70,60,.9);border-radius:999px;opacity:0;transition:opacity .4s;pointer-events:none;margin-left:-190px}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,12,.55);z-index:20;font-size:15px;gap:12px}
+#loading.hide{display:none}
+.spin{width:26px;height:26px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#vrOverlay{position:absolute;inset:0;display:none;background:#02060c;z-index:30}
+#vrOverlay canvas{display:block}
+#vrBar{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:10px;align-items:center;padding:10px 14px;z-index:31}
+#vrBar .t{flex:1;font-size:13px;color:var(--mute)}
+#vrOverlay #VRButton, #vrOverlay button[id="VRButton"]{font-family:var(--font)!important}
+.esri-ui-corner .esri-component{box-shadow:none}
+@media (max-width:820px){
+  header{right:12px}header p{display:none}
+  #panel{top:auto;height:44%;left:12px;right:12px;width:auto;bottom:88px}
+  #timeline{right:12px}
+  #tip{display:none}
+  #banner{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div id="viewDiv"></div>
+
+<header class="glass">
+  <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#1c8fff"/><stop offset="1" stop-color="#39d0ff"/></linearGradient></defs><circle cx="32" cy="32" r="30" fill="#0c1a2c" stroke="url(#lg)" stroke-width="3"/><path d="M32 12c-11 0-19 7-19 15 5-6 12-8 19-6-9 3-13 10-10 17 1-8 8-12 16-11-5 5-4 13 2 17-2-6 1-12 8-14-2 7 2 13 8 14-3-5-1-11 3-14-3-10-14-13-27-18z" fill="url(#lg)"/><circle cx="32" cy="32" r="3.5" fill="#0c1a2c"/></svg>
+  <div><h1>Hurricane Explorer 3D</h1><p>Follow real storms, see how they work, and who they affect</p></div>
+  <div class="spacer"></div>
+  <button class="btn primary" id="vrBtn" title="Open the immersive 3D / VR view">🥽 VR &amp; 3D model</button>
+</header>
+
+<div id="panel" class="glass">
+  <div class="tabs">
+    <button class="act" data-tab="storm">Storm</button>
+    <button data-tab="impacts">Impacts</button>
+    <button data-tab="enso">El Niño</button>
+    <button data-tab="about">About</button>
+  </div>
+  <div class="tabbody">
+    <section id="t-storm" class="act">
+      <h2>Choose a storm</h2>
+      <select id="stormSel"></select>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="qName" placeholder="Any storm name, e.g. Andrew">
+        <input type="number" id="qYear" placeholder="Year" style="width:92px" min="1850" max="2024">
+        <button class="btn" id="qGo">Find</button>
+      </div>
+      <p class="blurb" id="blurb"></p>
+      <div class="now">
+        <div class="badge" id="badge"><b>–</b><small>cat</small></div>
+        <div class="nowtxt"><div class="nm" id="nowName">Loading…</div><div class="dt" id="nowCat"></div></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">Wind (sustained)</div><div class="v" id="sWind">–</div></div>
+        <div class="stat"><div class="k">Air pressure</div><div class="v" id="sPres">–</div></div>
+        <div class="stat"><div class="k">Moving</div><div class="v" id="sMove">–</div></div>
+        <div class="stat"><div class="k">Over</div><div class="v" id="sOver">–</div></div>
+      </div>
+      <h2>Show</h2>
+      <div class="chips" id="chips">
+        <label class="chip"><input type="checkbox" data-l="storm" checked><span class="dot"></span>3D storm</label>
+        <label class="chip"><input type="checkbox" data-l="wind" checked><span class="dot"></span>Wind zones</label>
+        <label class="chip"><input type="checkbox" data-l="swath" checked><span class="dot"></span>Wind swath</label>
+        <label class="chip"><input type="checkbox" data-l="rain" checked><span class="dot"></span>Rainfall</label>
+        <label class="chip"><input type="checkbox" data-l="track" checked><span class="dot"></span>Track</label>
+        <label class="chip"><input type="checkbox" data-l="cities" checked><span class="dot"></span>Cities</label>
+        <label class="chip"><input type="checkbox" data-l="cone" checked><span class="dot"></span>Forecast cone</label>
+      </div>
+      <h2>Camera</h2>
+      <div class="seg">
+        <button class="btn on" data-cam="globe">🌍 Globe</button>
+        <button class="btn" data-cam="follow">🎥 Follow</button>
+        <button class="btn" data-cam="ground" id="camGround">🏠 Street level</button>
+      </div>
+      <h2>Rainfall (model)</h2>
+      <div class="legend" id="rainLegend"></div>
+      <div class="legendlbl"><span>25</span><span>50</span><span>100</span><span>200</span><span>300</span><span>500 mm+</span></div>
+      <h2>Wind zones</h2>
+      <div class="chips" style="font-size:12px">
+        <span class="chip"><span class="dot" style="background:#ffd84a"></span>Tropical-storm winds 63+ km/h</span>
+        <span class="chip"><span class="dot" style="background:#ff4a3d"></span>Hurricane winds 119+ km/h</span>
+      </div>
+    </section>
+
+    <section id="t-impacts">
+      <h2>People at risk so far</h2>
+      <div class="counter"><div class="ic" style="background:#ff4a3d33">🌀</div><div><div class="n" id="cH">0</div><div class="l">in major cities hit by <b>hurricane-force</b> winds</div></div></div>
+      <div class="counter"><div class="ic" style="background:#ffd84a33">💨</div><div><div class="n" id="cT">0</div><div class="l">in major cities hit by <b>tropical-storm-force</b> winds</div></div></div>
+      <div class="counter"><div class="ic" style="background:#39d0ff33">🌧️</div><div><div class="n" id="cR">0</div><div class="l">in major cities with <b>100 mm+</b> of rain (model)</div></div></div>
+      <div class="counter"><div class="ic" style="background:#2f7dff33">🌊</div><div><div class="n" id="cS">–</div><div class="l">in cities below the <b>storm surge</b> (run the flood below)</div></div></div>
+      <h2>Worst-hit cities</h2>
+      <ul class="cities" id="cityList"><li><span>–</span><span></span></li></ul>
+      <p class="note">Counts only people living in the cities in Esri’s World Cities layer (about 2,500 large cities), so real totals are much higher. Rural areas and small towns are not counted.</p>
+      <h2>Storm surge flood</h2>
+      <p class="body">Strong winds push the sea onto the land. Pick a surge height and flood the coast where the storm made landfall.</p>
+      <div class="row"><input type="range" id="surgeR" min="0.5" max="10" step="0.1" value="3" style="flex:1"><b id="surgeV" style="width:56px;text-align:right">3.0 m</b></div>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="surgeGo" style="flex:1">🌊 Flood the coast</button><button class="btn" id="surgeOff">Clear</button></div>
+      <p class="note" id="surgeNote">Starting height comes from the storm’s category at landfall. Real surges depend strongly on the shape of the coast and sea floor.</p>
+    </section>
+
+    <section id="t-enso">
+      <h2>El Niño 2026</h2>
+      <p class="body">NOAA’s September 2026 update says El Niño is present and strengthening, with a greater than 90% chance of a <b>very strong</b> event this autumn and winter.</p>
+      <p class="body">El Niño does <b>not</b> make hurricanes stronger everywhere. It <b>shifts</b> where they happen: stronger winds high in the atmosphere (<i>wind shear</i>) tear apart storms in the <b>Atlantic</b>, while warmer water helps storms in the <b>eastern and central Pacific</b>.</p>
+      <h2>Compare the data</h2>
+      <p class="body" style="margin-top:0">Show every tropical storm and hurricane from one year, straight from NOAA’s IBTrACS archive:</p>
+      <div class="seg" id="ensoSeg">
+        <button class="btn on" data-y="0">Off</button>
+        <button class="btn" data-y="2015">2015 El Niño</button>
+        <button class="btn" data-y="2010">2010 La Niña</button>
+      </div>
+      <div class="bars" id="ensoBars" style="margin-top:12px"><div class="hd">Counting hurricanes / typhoons per ocean…</div></div>
+      <p class="note">Hurricanes/typhoons = storms that reached 64 knots (119 km/h). One year never proves a rule — scientists look at many years. In 2023, a record-warm Atlantic still had a busy season despite El Niño.</p>
+      <h2>Try these El Niño storms</h2>
+      <div class="chips">
+        <span class="chip" data-go="PATRICIA|2015">Patricia 2015</span>
+        <span class="chip" data-go="OTIS|2023">Otis 2023</span>
+        <span class="chip" data-go="INIKI|1992">Iniki 1992</span>
+      </div>
+    </section>
+
+    <section id="t-about">
+      <h2>Where the data comes from</h2>
+      <p class="body"><b>Live storms:</b> Esri Living Atlas <i>Active Hurricanes, Cyclones and Typhoons</i> (NOAA National Hurricane Center &amp; Joint Typhoon Warning Center), checked every 15 minutes.<br>
+      <b>Past storms:</b> Esri Living Atlas <i>Historical Hurricane Tracks</i> (NOAA IBTrACS, 1842–2024).<br>
+      <b>People:</b> Esri <i>World Cities</i>.<br>
+      <b>Globe:</b> ArcGIS World Imagery and World Elevation.</p>
+      <h2>What is modelled (not measured)</h2>
+      <p class="body"><b>Wind zones</b> use a simple wind-profile model from the storm’s top wind speed and latitude. <b>Rainfall</b> uses a simplified R-CLIPER-style model (rain depends on strength, size and forward speed); it shows the pattern, not exact totals — real extremes can be far higher (Harvey 2017 dropped over 1,500 mm). <b>Storm surge</b> is a “what if” flood at a chosen height. <b>3D storm heights are stretched ×8</b> — a real hurricane is about 15 km tall but hundreds of km wide.</p>
+      <p class="note">For learning only. For real warnings always use your national weather service.</p>
+      <p class="note">A <a href="https://www.arcgis.com/apps/instant/atlas/index.html?appid=0cd1cdee853c413a84bfe4b9a6931f0d" target="_blank" rel="noopener">MapMaker</a> companion app.</p>
+    </section>
+  </div>
+</div>
+
+<div id="tip" class="glass"><span class="i">💡</span><span id="tipTxt">Warm ocean water (above about 26.5 °C) is a hurricane’s fuel.</span></div>
+<div id="banner">LANDFALL</div>
+
+<div id="timeline" class="glass">
+  <button id="playBtn" title="Play / pause (space)">▶</button>
+  <div id="tlMid">
+    <div id="tlTop"><span id="tlTime">–</span><span id="tlTag">FORECAST</span><span id="tlDay" style="color:var(--mute)"></span></div>
+    <input type="range" id="slider" min="0" max="1" step="0.01" value="0">
+  </div>
+  <select id="speed" title="Playback speed">
+    <option value="3">3 h/s</option><option value="6" selected>6 h/s</option><option value="12">12 h/s</option><option value="24">1 day/s</option>
+  </select>
+</div>
+
+<div id="loading"><div class="spin"></div><span id="loadTxt">Loading the globe…</span></div>
+
+<div id="vrOverlay">
+  <div id="vrBar" class="glass">
+    <button class="btn" id="vrClose">← Back to map</button>
+    <span class="t">Drag to look around · Space = play/pause · In a headset: trigger = play/pause, thumbstick = turn globe / scrub time</span>
+  </div>
+</div>
+
+<!-- ===================== Model maths (plain JS, no Esri dependency) ===================== -->
+<script id="hx-model">
+(function(G){
+  const R_EARTH = 6371;
+  const KT_KMH = 1.852, KT_MPH = 1.15078;
+  const CATS = [
+    {n:-1, short:"TD", label:"Tropical depression", color:"#5ebaff"},
+    {n:0,  short:"TS", label:"Tropical storm",      color:"#00e5dc"},
+    {n:1,  short:"1",  label:"Category 1 hurricane",color:"#ffffcc"},
+    {n:2,  short:"2",  label:"Category 2 hurricane",color:"#ffe775"},
+    {n:3,  short:"3",  label:"Category 3 hurricane",color:"#ffc140"},
+    {n:4,  short:"4",  label:"Category 4 hurricane",color:"#ff8f20"},
+    {n:5,  short:"5",  label:"Category 5 hurricane",color:"#ff6060"}
+  ];
+  function catOf(kt){
+    if(kt==null||isNaN(kt)) return CATS[0];
+    if(kt>=137) return CATS[6]; if(kt>=113) return CATS[5]; if(kt>=96) return CATS[4];
+    if(kt>=83) return CATS[3]; if(kt>=64) return CATS[2]; if(kt>=34) return CATS[1]; return CATS[0];
+  }
+  const toRad = d=>d*Math.PI/180, toDeg = r=>r*180/Math.PI;
+  function normLon(l){ return ((l+180)%360+360)%360-180; }
+  function haversine(lat1,lon1,lat2,lon2){
+    const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+    const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2*R_EARTH*Math.asin(Math.min(1,Math.sqrt(a)));
+  }
+  function bearing(lat1,lon1,lat2,lon2){
+    const y=Math.sin(toRad(lon2-lon1))*Math.cos(toRad(lat2));
+    const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
+    return (toDeg(Math.atan2(y,x))+360)%360;
+  }
+  // local east/north offset in km -> [lon,lat] (flat approximation, fine within ~1000 km)
+  function offset(lat0,lon0,eKm,nKm){
+    const lat=lat0+nKm/111.32;
+    const lon=lon0+eKm/(111.32*Math.max(0.05,Math.cos(toRad(lat0))));
+    return [lon,lat];
+  }
+  // ---- wind profile model ----
+  // Radius of max wind: Willoughby, Darling & Rahn (2006): 46.4*exp(-0.0155*Vmax(m/s)+0.0169*|lat|)
+  function rmwKm(kt,lat){
+    const v=Math.max(10,kt)*0.514444;
+    return Math.min(120,Math.max(8,46.4*Math.exp(-0.0155*v+0.0169*Math.abs(lat))));
+  }
+  const X_DECAY=0.6; // outer decay exponent of a modified Rankine vortex
+  function radiusFor(kt,rmw,threshold){
+    if(!(kt>threshold)) return 0;
+    return Math.min(700, rmw*Math.pow(kt/threshold,1/X_DECAY));
+  }
+  function windAt(kt,rmw,d){ // kt at distance d km
+    if(d<=rmw) return kt*d/rmw;
+    return kt*Math.pow(rmw/d,X_DECAY);
+  }
+  // ---- rainfall (R-CLIPER-style radial profile: linear to rm, exponential beyond) ----
+  function rainParams(kt){
+    if(!(kt>=20)) return null;
+    const U=Math.max(0.5,1+(kt-35)/33), k=25.4/24; // in/day -> mm/h
+    return { T0:Math.max(0,-1.10+3.96*U)*k, Tm:Math.max(0.5,-1.60+4.78*U)*k,
+             rm:Math.max(15,64.5-13.0*U), re:Math.max(50,150-16.0*U) };
+  }
+  function rainRate(p,d){
+    if(!p) return 0;
+    return d<p.rm ? p.T0+(p.Tm-p.T0)*(d/p.rm) : p.Tm*Math.exp(-(d-p.rm)/p.re);
+  }
+  // Historical Saffir-Simpson surge ranges (ft) 4-5, 6-8, 9-12, 13-18, >18 -> representative metres
+  function surgeFor(kt){
+    const c=catOf(kt).n;
+    return [0.6,0.9,1.4,2.2,3.2,4.7,6.0][c+1];
+  }
+  // ---- build hourly samples from track points {t,lat,lon,wind,pres,fc} ----
+  function buildSamples(raw){
+    let pts=raw.filter(p=>isFinite(p.t)&&isFinite(p.lat)&&isFinite(p.lon)).sort((a,b)=>a.t-b.t);
+    const ded=[]; for(const p of pts){ if(ded.length&&Math.abs(ded[ded.length-1].t-p.t)<60000) { if(p.wind>0&&!(ded[ded.length-1].wind>0)) ded[ded.length-1]=p; continue;} ded.push({...p}); }
+    pts=ded; if(!pts.length) return [];
+    // fill missing wind/pressure by nearest valid
+    const fill=(key)=>{ let last=null; for(const p of pts){ if(p[key]>0) last=p[key]; else if(last!=null) p[key]=last; }
+      last=null; for(let i=pts.length-1;i>=0;i--){ if(pts[i][key]>0) last=pts[i][key]; else if(last!=null) pts[i][key]=last; } };
+    fill('wind'); fill('pres');
+    // unwrap longitudes
+    let prev=pts[0].lon; for(const p of pts){ let l=p.lon; while(l-prev>180) l-=360; while(l-prev<-180) l+=360; p.lonU=l; prev=l; }
+    const H=3600e3, out=[];
+    if(pts.length===1){ const p=pts[0]; out.push({t:p.t,lat:p.lat,lonU:p.lonU,wind:p.wind||0,pres:p.pres||null,fc:!!p.fc}); }
+    else{
+      let t=Math.ceil(pts[0].t/H)*H, j=0; const tEnd=pts[pts.length-1].t;
+      if(t>tEnd) t=pts[0].t;
+      for(;t<=tEnd+1;t+=H){
+        while(j<pts.length-2&&pts[j+1].t<t) j++;
+        const a=pts[j], b=pts[j+1]; const f=Math.min(1,Math.max(0,(t-a.t)/Math.max(1,b.t-a.t)));
+        const L=(x,y)=>x==null||y==null?(x??y):x+(y-x)*f;
+        out.push({t,lat:L(a.lat,b.lat),lonU:L(a.lonU,b.lonU),wind:L(a.wind,b.wind)||0,pres:L(a.pres,b.pres),fc:f<0.5?!!a.fc:!!b.fc});
+        if(out.length>2400) break;
+      }
+    }
+    const n=out.length;
+    for(let i=0;i<n;i++){
+      const s=out[i]; s.lon=normLon(s.lonU); s.i=i;
+      const a=out[Math.max(0,i-1)], b=out[Math.min(n-1,i+1)];
+      const hrs=Math.max(1,(b.t-a.t)/H);
+      s.speed=haversine(a.lat,a.lonU,b.lat,b.lonU)/hrs; // km/h
+      s.heading=(a===b)?0:bearing(a.lat,a.lonU,b.lat,b.lonU);
+      s.cat=catOf(s.wind); s.rmw=rmwKm(s.wind,s.lat);
+      s.r34=radiusFor(s.wind,s.rmw,34); s.r50=radiusFor(s.wind,s.rmw,50); s.r64=radiusFor(s.wind,s.rmw,64);
+      s.rain=rainParams(s.wind); s.hemi=s.lat>=0?1:-1; s.land=null;
+    }
+    return out;
+  }
+  // ---- rainfall accumulation grid ----
+  function RainGrid(samples){
+    let la0=90,la1=-90,lo0=1e9,lo1=-1e9;
+    for(const s of samples){ la0=Math.min(la0,s.lat); la1=Math.max(la1,s.lat); lo0=Math.min(lo0,s.lonU); lo1=Math.max(lo1,s.lonU); }
+    const pad=6; this.latMin=Math.max(-85,la0-pad); this.latMax=Math.min(85,la1+pad); this.lonMin=lo0-pad; this.lonMax=lo1+pad;
+    const span=Math.max(this.latMax-this.latMin,this.lonMax-this.lonMin);
+    this.res=Math.max(0.06,span/420);
+    this.nx=Math.ceil((this.lonMax-this.lonMin)/this.res); this.ny=Math.ceil((this.latMax-this.latMin)/this.res);
+    this.lonMax=this.lonMin+this.nx*this.res; this.latMax=this.latMin+this.ny*this.res;
+    this.g=new Float32Array(this.nx*this.ny); this.upTo=-1; this.samples=samples;
+  }
+  RainGrid.prototype.addHour=function(i){
+    const s=this.samples[i]; if(!s||!s.rain) return;
+    const reach=s.rain.rm+s.rain.re*4.5, dLat=reach/111.32, dLon=reach/(111.32*Math.max(0.1,Math.cos(toRad(s.lat))));
+    const j0=Math.max(0,Math.floor((this.latMax-(s.lat+dLat))/this.res)), j1=Math.min(this.ny-1,Math.ceil((this.latMax-(s.lat-dLat))/this.res));
+    const i0=Math.max(0,Math.floor((s.lonU-dLon-this.lonMin)/this.res)), i1=Math.min(this.nx-1,Math.ceil((s.lonU+dLon-this.lonMin)/this.res));
+    const cosL=Math.cos(toRad(s.lat));
+    for(let j=j0;j<=j1;j++){
+      const lat=this.latMax-(j+0.5)*this.res, dy=(lat-s.lat)*111.32;
+      for(let k=i0;k<=i1;k++){
+        const lon=this.lonMin+(k+0.5)*this.res, dx=(lon-s.lonU)*111.32*cosL;
+        const d=Math.sqrt(dx*dx+dy*dy); if(d>reach) continue;
+        this.g[j*this.nx+k]+=rainRate(s.rain,d);
+      }
+    }
+  };
+  RainGrid.prototype.advanceTo=function(h){
+    h=Math.min(this.samples.length-1,Math.floor(h));
+    if(h<this.upTo){ this.g.fill(0); this.upTo=-1; }
+    for(let i=this.upTo+1;i<=h;i++) this.addHour(i);
+    this.upTo=Math.max(this.upTo,h);
+  };
+  RainGrid.prototype.at=function(lat,lon){
+    let l=lon; while(l<this.lonMin) l+=360; while(l>this.lonMax) l-=360;
+    const k=Math.floor((l-this.lonMin)/this.res), j=Math.floor((this.latMax-lat)/this.res);
+    if(k<0||j<0||k>=this.nx||j>=this.ny) return 0; return this.g[j*this.nx+k];
+  };
+  const RAIN_STOPS=[[10,[120,200,255,0]],[25,[90,200,120,.55]],[50,[40,170,70,.7]],[100,[250,230,60,.78]],[200,[255,150,30,.82]],[300,[240,50,40,.85]],[500,[200,40,200,.88]],[800,[255,220,255,.92]]];
+  function rainColor(mm){
+    if(mm<RAIN_STOPS[0][0]) return null;
+    for(let i=1;i<RAIN_STOPS.length;i++){
+      if(mm<RAIN_STOPS[i][0]){ const [a,ca]=RAIN_STOPS[i-1],[b,cb]=RAIN_STOPS[i], f=(mm-a)/(b-a);
+        return ca.map((v,q)=>v+(cb[q]-v)*f); }
+    }
+    return RAIN_STOPS[RAIN_STOPS.length-1][1];
+  }
+  function paintRain(grid,canvas){
+    canvas.width=grid.nx; canvas.height=grid.ny;
+    const ctx=canvas.getContext('2d'), img=ctx.createImageData(grid.nx,grid.ny), d=img.data;
+    for(let p=0;p<grid.g.length;p++){ const c=rainColor(grid.g[p]); if(!c) continue;
+      d[p*4]=c[0]; d[p*4+1]=c[1]; d[p*4+2]=c[2]; d[p*4+3]=Math.round(c[3]*255); }
+    ctx.putImageData(img,0,0); return canvas;
+  }
+  // ---- 3D storm geometry: eyewall ring + logarithmic spiral rain bands (lon/lat rings, km scale) ----
+  function stormShapes(s,spin){
+    const shapes=[], h=s.hemi, lat0=s.lat, lon0=s.lonU;
+    const strong=s.wind>=64, f=Math.min(1.4,Math.max(0.45,0.35+s.wind/150));
+    const rEye=strong?Math.max(6,s.rmw*0.55):0, rWall=Math.max(28,s.rmw*1.9);
+    const rOuter=Math.max(rWall*2.2,Math.min(650,(s.r34||s.rmw*4)*1.05));
+    const P=(e,n)=>offset(lat0,lon0,e,n);
+    const circle=(r,ccw)=>{ const ring=[]; for(let q=0;q<=48;q++){ const a=(ccw?1:-1)*q/48*2*Math.PI; ring.push(P(r*Math.cos(a),r*Math.sin(a))); } return ring; };
+    const wall=[circle(rWall,false)]; if(rEye>0) wall.push(circle(rEye,true));
+    shapes.push({kind:'wall',rings:wall,base:600,height:15000*f});
+    const arms=4, K=1.6;
+    for(let a=0;a<arms;a++){
+      const th0=spin+a*2*Math.PI/arms;
+      const r1=rWall*0.95, r2=rOuter; const segs=3;
+      for(let sg=0;sg<segs;sg++){
+        const ra=r1*Math.pow(r2/r1,sg/segs), rb=r1*Math.pow(r2/r1,(sg+1)/segs);
+        const left=[],right=[];
+        for(let q=0;q<=10;q++){
+          const r=ra*Math.pow(rb/ra,q/10);
+          const th=th0-h*K*Math.log(r/r1);
+          const w=(0.34-0.22*(sg*10+q)/(segs*10))*r*0.55+8;
+          const dth=w/(2*r);
+          left.push(P(r*Math.cos(th+dth),r*Math.sin(th+dth)));
+          right.push(P(r*Math.cos(th-dth),r*Math.sin(th-dth)));
+        }
+        let ring=left.concat(right.reverse()); ring.push(ring[0]);
+        let area=0; for(let q=0;q<ring.length-1;q++) area+=ring[q][0]*ring[q+1][1]-ring[q+1][0]*ring[q][1];
+        if(area>0) ring=ring.reverse(); // Esri outer rings are clockwise
+        shapes.push({kind:'band',rings:[ring],base:900,height:[11000,7500,4200][sg]*f});
+      }
+    }
+    return shapes;
+  }
+  G.HXM={R_EARTH,KT_KMH,KT_MPH,CATS,catOf,normLon,haversine,bearing,offset,rmwKm,radiusFor,windAt,rainParams,rainRate,surgeFor,buildSamples,RainGrid,rainColor,paintRain,stormShapes,RAIN_STOPS};
+})(typeof window!=='undefined'?window:globalThis);
+</script>
+
+<!-- ===================== ArcGIS app ===================== -->
+<script id="hx-app">
+require([
+  "esri/Map","esri/views/SceneView","esri/layers/GraphicsLayer","esri/layers/FeatureLayer","esri/Graphic",
+  "esri/geometry/Point","esri/geometry/Polyline","esri/geometry/Polygon","esri/geometry/Circle","esri/geometry/Multipoint","esri/geometry/Extent",
+  "esri/rest/query","esri/layers/MediaLayer","esri/layers/support/ImageElement","esri/layers/support/ExtentAndRotationGeoreference",
+  "esri/geometry/operators/unionOperator","esri/views/3d/environment/RainyWeather","esri/views/3d/environment/SunnyWeather"
+],(Map,SceneView,GraphicsLayer,FeatureLayer,Graphic,Point,Polyline,Polygon,Circle,Multipoint,Extent,
+   query,MediaLayer,ImageElement,ExtentAndRotationGeoreference,unionOperator,RainyWeather,SunnyWeather)=>{
+
+const M=window.HXM;
+const URL_LIVE="https://services9.arcgis.com/RHVPKKiFTONKtxq3/arcgis/rest/services/Active_Hurricanes_v1/FeatureServer";
+const URL_HIST="https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/Historical_Hurricane_Tracks/FeatureServer/0";
+const URL_CITIES="https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Cities/FeatureServer/0";
+const WGS84={wkid:4326};
+const $=id=>document.getElementById(id);
+
+const FAMOUS=[
+  {name:"PATRICIA",year:2015,basin:"EP",label:"Patricia 2015 — Mexico",blurb:"The strongest hurricane on record in the Western Hemisphere by wind speed. It formed during the very strong 2015–16 El Niño over unusually warm Pacific water."},
+  {name:"OTIS",year:2023,basin:"EP",label:"Otis 2023 — Acapulco",blurb:"Grew from a tropical storm to a Category 5 hurricane in about a day — ‘rapid intensification’ — then hit Acapulco, Mexico, during the 2023 El Niño."},
+  {name:"HAIYAN",year:2013,basin:"WP",label:"Haiyan 2013 — Philippines",blurb:"One of the most powerful tropical cyclones ever to reach land. Its storm surge devastated Tacloban in the Philippines."},
+  {name:"KATRINA",year:2005,basin:"NA",label:"Katrina 2005 — New Orleans",blurb:"Its storm surge overwhelmed the levees that protect New Orleans, much of which lies below sea level."},
+  {name:"HARVEY",year:2017,basin:"NA",label:"Harvey 2017 — Texas",blurb:"Stalled over Texas for days. Watch its forward speed drop — rain kept falling on the same places, causing record floods."},
+  {name:"MARIA",year:2017,basin:"NA",label:"Maria 2017 — Puerto Rico",blurb:"Crossed Puerto Rico as a Category 4 hurricane, damaging the island’s power grid for months."},
+  {name:"IDAI",year:2019,basin:"SI",label:"Idai 2019 — Mozambique",blurb:"A Southern Hemisphere cyclone — notice it spins clockwise. It caused catastrophic flooding around Beira, Mozambique."},
+  {name:"NARGIS",year:2008,basin:"NI",label:"Nargis 2008 — Myanmar",blurb:"Its storm surge swept across the low, flat Irrawaddy Delta in Myanmar."},
+  {name:"INIKI",year:1992,basin:"EP",label:"Iniki 1992 — Hawaii",blurb:"Hit the Hawaiian island of Kauai. Central Pacific hurricanes like this are more likely in El Niño years."}
+];
+
+// ---------- state ----------
+const S={storm:null,samples:[],t:0,playing:false,speed:6,H:-1,cam:"globe",vrOpen:false,rain:null,cities:[],landfall:-1,live:[],lastFollow:0,spin:0,surge:null,show:{storm:true,wind:true,swath:true,rain:true,track:true,cities:true,cone:true}};
+window.HX={S,M,
+  advance:(dt)=>advance(dt),
+  togglePlay:()=>setPlaying(!S.playing),
+  setT:(t)=>setT(t),
+  sample:()=>curSample(),
+  stats:()=>S.statsNow||{},
+  onVR:(open)=>{S.vrOpen=open; if(!open) refreshAll(true);}
+};
+
+// ---------- map & view ----------
+const map=new Map({basemap:"hybrid",ground:"world-elevation"});
+const rainElement=new ImageElement({image:blankPng(),georeference:new ExtentAndRotationGeoreference({extent:new Extent({xmin:0,ymin:0,xmax:1,ymax:1,spatialReference:WGS84})})});
+const rainLayer=new MediaLayer({source:[rainElement],title:"Rainfall (model)",opacity:0.85});
+const swathLayer=new GraphicsLayer({title:"Swath",elevationInfo:{mode:"on-the-ground"}});
+const coneLayer=new FeatureLayer({url:URL_LIVE+"/4",title:"Forecast cone",visible:false,definitionExpression:"1=0",
+  renderer:{type:"simple",symbol:{type:"simple-fill",color:[255,255,255,0.14],outline:{color:[255,255,255,0.85],width:1.5,style:"dash"}}},elevationInfo:{mode:"on-the-ground"}});
+const ensoLayer=new FeatureLayer({url:URL_HIST,title:"Year tracks",visible:false,definitionExpression:"1=0",outFields:["USA_WIND"],
+  renderer:{type:"class-breaks",field:"USA_WIND",classBreakInfos:[
+    {minValue:34,maxValue:63.99,symbol:{type:"simple-line",color:"#00e5dc",width:1.5}},
+    {minValue:64,maxValue:95.99,symbol:{type:"simple-line",color:"#ffe775",width:2.2}},
+    {minValue:96,maxValue:112.99,symbol:{type:"simple-line",color:"#ffc140",width:2.8}},
+    {minValue:113,maxValue:136.99,symbol:{type:"simple-line",color:"#ff8f20",width:3.2}},
+    {minValue:137,maxValue:400,symbol:{type:"simple-line",color:"#ff6060",width:3.6}}]},elevationInfo:{mode:"on-the-ground"}});
+const windLayer=new GraphicsLayer({title:"Wind",elevationInfo:{mode:"on-the-ground"}});
+const trackLayer=new GraphicsLayer({title:"Track",elevationInfo:{mode:"on-the-ground"}});
+const cityLayer=new GraphicsLayer({title:"Cities",elevationInfo:{mode:"relative-to-ground"}});
+const stormLayer=new GraphicsLayer({title:"3D storm",elevationInfo:{mode:"absolute-height"}});
+const surgeLayer=new GraphicsLayer({title:"Surge",elevationInfo:{mode:"absolute-height"}});
+map.addMany([rainLayer,ensoLayer,swathLayer,coneLayer,windLayer,trackLayer,cityLayer,stormLayer,surgeLayer]);
+
+const view=new SceneView({container:"viewDiv",map,qualityProfile:"high",
+  camera:{position:{longitude:-150,latitude:8,z:21000000},tilt:0,heading:0},
+  environment:{lighting:{type:"virtual"},atmosphereEnabled:true,atmosphere:{quality:"high"},starsEnabled:true},
+  ui:{components:["zoom","compass","attribution"]},popupEnabled:false});
+view.ui.move(["zoom","compass"],"top-left");
+view.ui.padding={top:80,left:12,right:396,bottom:96};
+
+function blankPng(){ const c=document.createElement('canvas'); c.width=c.height=2; return c.toDataURL(); }
+function loading(msg){ if(msg){ $('loadTxt').textContent=msg; $('loading').classList.remove('hide'); } else $('loading').classList.add('hide'); }
+
+// ---------- data loading ----------
+async function q(url,params){ return (await query.executeQueryJSON(url,{returnGeometry:false,outSpatialReference:WGS84,...params})).features; }
+
+async function loadLive(){
+  try{
+    const [obs,fc]=await Promise.all([
+      q(URL_LIVE+"/1",{where:"1=1",outFields:["STORMNAME","STORMID","DTG","INTENSITY","MSLP","LAT","LON","BASIN"],orderByFields:["DTG"]}),
+      q(URL_LIVE+"/0",{where:"1=1",outFields:["STORMNAME","ADVDATE","TAU","MAXWIND","MSLP","LAT","LON","BASIN"]})
+    ]);
+    const by={};
+    const key=n=>(n||"").trim().toUpperCase();
+    for(const f of obs){ const a=f.attributes; const k=key(a.STORMNAME); if(!k) continue; (by[k]=by[k]||{name:k,basin:a.BASIN,pts:[]}).pts.push({t:a.DTG,lat:a.LAT,lon:a.LON,wind:a.INTENSITY,pres:a.MSLP,fc:false}); }
+    for(const f of fc){ const a=f.attributes; const k=key(a.STORMNAME); if(!k||a.ADVDATE==null) continue;
+      const st=(by[k]=by[k]||{name:k,basin:a.BASIN,pts:[]}); const t=a.ADVDATE+(a.TAU||0)*3600e3;
+      const lastObs=Math.max(-Infinity,...st.pts.filter(p=>!p.fc).map(p=>p.t));
+      if(a.TAU>0||!isFinite(lastObs)) if(!(t<=lastObs)) st.pts.push({t,lat:a.LAT,lon:a.LON,wind:a.MAXWIND,pres:a.MSLP,fc:a.TAU>0}); }
+    S.live=Object.values(by).filter(s=>s.pts.length).map(s=>{ const obsPts=s.pts.filter(p=>!p.fc); const cur=(obsPts.length?obsPts:s.pts).reduce((a,b)=>a.t>b.t?a:b);
+      return {...s,live:true,curWind:cur.wind||0,label:`${title(s.name)} — ${M.catOf(cur.wind).label.toLowerCase()} (live)`,blurb:`A live storm, updated from ${/^(AL|EP|CP)$/i.test(s.basin)?"the US National Hurricane Center":"the Joint Typhoon Warning Center"}. The dashed part of the track and the white cone show the official forecast — where the centre is likely to go.`}; })
+      .sort((a,b)=>b.curWind-a.curWind);
+  }catch(e){ console.warn("Live feed failed",e); S.live=[]; }
+}
+
+async function loadHistorical(name,year,basin){
+  const nm=name.trim().toUpperCase().replace(/'/g,"''");
+  const feats=await q(URL_HIST,{where:`NAME = '${nm}' AND year = ${+year}`,outFields:["SID","BASIN","NAME","Hurricane_Date","LAT","LON","USA_WIND","USA_PRES"],orderByFields:["Hurricane_Date"]});
+  if(!feats.length) throw new Error(`No storm called ${title(name)} found in ${year}.`);
+  const bySid={}; for(const f of feats){ const a=f.attributes; (bySid[a.SID]=bySid[a.SID]||[]).push(a); }
+  let groups=Object.values(bySid);
+  groups.sort((a,b)=>((b[0].BASIN===basin)-(a[0].BASIN===basin))||(b.length-a.length));
+  const g=groups[0];
+  return {name:title(nm),year:+year,basin:g[0].BASIN,live:false,
+    pts:g.map(a=>({t:a.Hurricane_Date,lat:a.LAT,lon:a.LON,wind:a.USA_WIND>0?a.USA_WIND:null,pres:a.USA_PRES>0?a.USA_PRES:null,fc:false}))};
+}
+function title(s){ return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()); }
+
+// ---------- storm selection ----------
+function fillSelect(){
+  const sel=$('stormSel'); sel.innerHTML="";
+  const g1=document.createElement('optgroup'); g1.label="🔴 Active now (live)";
+  if(S.live.length) S.live.forEach((s,i)=>g1.appendChild(new Option(s.label,"live:"+i)));
+  else { const o=new Option("No active storms right now","",false,false); o.disabled=true; g1.appendChild(o); }
+  const g2=document.createElement('optgroup'); g2.label="📚 Famous storms";
+  FAMOUS.forEach((s,i)=>g2.appendChild(new Option(s.label,"fam:"+i)));
+  sel.append(g1,g2);
+}
+$('stormSel').addEventListener('change',e=>chooseValue(e.target.value));
+async function chooseValue(v){
+  if(!v) return;
+  const [kind,i]=v.split(":");
+  if(kind==="live"){ const s=S.live[+i]; await openStorm({...s,name:title(s.name)},s.blurb); }
+  else { const f=FAMOUS[+i]; await openHistorical(f.name,f.year,f.basin,f.blurb); }
+}
+async function openHistorical(name,year,basin,blurb){
+  loading(`Loading ${title(name)} (${year})…`);
+  try{ const st=await loadHistorical(name,year,basin); await openStorm(st,blurb||`${st.name}, ${year}. Press play to follow its whole life.`); }
+  catch(e){ loading(); alert(e.message||"Could not load that storm."); }
+}
+$('qGo').onclick=()=>{ const n=$('qName').value.trim(), y=$('qYear').value; if(n&&y) { $('stormSel').value=""; openHistorical(n,y,null); } };
+document.querySelectorAll('[data-go]').forEach(el=>el.onclick=()=>{ const [n,y]=el.dataset.go.split("|"); const f=FAMOUS.find(x=>x.name===n); openHistorical(n,+y,f&&f.basin,f&&f.blurb); tab("storm"); });
+
+async function openStorm(st,blurb){
+  loading(`Preparing ${st.name}…`);
+  setPlaying(false);
+  const samples=M.buildSamples(st.pts);
+  if(!samples.length){ loading(); alert("This storm has no usable track data yet."); return; }
+  S.storm=st; S.samples=samples; S.H=-1; S.landfall=-1; S.cities=[]; S.surge=null; surgeLayer.removeAll();
+  $('blurb').textContent=blurb||""; $('cS').textContent="–";
+  // slider background = storm life coloured by category
+  const n=samples.length; const stops=samples.filter((s,i)=>i%Math.max(1,Math.floor(n/60))===0||i===n-1).map(s=>`${s.cat.color} ${(s.i/(Math.max(1,n-1))*100).toFixed(1)}%`);
+  $('slider').style.background=`linear-gradient(90deg,${stops.join(",")})`;
+  $('slider').max=n-1; 
+  // forecast cone
+  coneLayer.definitionExpression=st.live?`UPPER(STORMNAME) = '${st.name.toUpperCase().replace(/'/g,"''")}'`:"1=0";
+  coneLayer.visible=!!st.live&&S.show.cone;
+  // rain grid
+  S.rain=new M.RainGrid(samples);
+  $('camGround').disabled=true; $('surgeGo').disabled=true;
+  const {lonMin,lonMax}=S.rain; const shift=lonMin>180?-360:lonMax<-180?360:0;
+  rainElement.georeference=new ExtentAndRotationGeoreference({extent:new Extent({xmin:lonMin+shift,xmax:lonMax+shift,ymin:S.rain.latMin,ymax:S.rain.latMax,spatialReference:WGS84})});
+  buildTrack(); buildStormGraphics(); buildSwaths();
+  setT(samples[0].t,true);
+  flyToStorm();
+  loading();
+  // async extras
+  detectLand().then(()=>{ updateUI(true); });
+  loadCities().then(()=>updateImpacts(true));
+  loadingTipFirst();
+}
+function loadingTipFirst(){ const s=S.samples[0]; if(s) $('tipTxt').textContent= s.hemi<0?"Southern Hemisphere storm: it spins clockwise. In the Northern Hemisphere storms spin anticlockwise — the Coriolis effect of Earth’s rotation.":"Press ▶ to play the storm. Warm ocean water (above about 26.5 °C) is a hurricane’s fuel."; }
+
+function flyToStorm(){
+  const s=S.samples; let la0=90,la1=-90,lo0=1e9,lo1=-1e9; s.forEach(p=>{la0=Math.min(la0,p.lat);la1=Math.max(la1,p.lat);lo0=Math.min(lo0,p.lonU);lo1=Math.max(lo1,p.lonU);});
+  const span=Math.max(la1-la0,(lo1-lo0)*Math.cos((la0+la1)/2*Math.PI/180),8);
+  const alt=Math.min(18e6,Math.max(2.2e6,span*111e3*2.1));
+  S.cam="globe"; camButtons(); view.environment.weather=new SunnyWeather({cloudCover:0});
+  view.goTo({position:{longitude:M.normLon((lo0+lo1)/2),latitude:(la0+la1)/2-span*0.35,z:alt},tilt:28,heading:0},{duration:2200}).catch(()=>{});
+}
+
+// ---------- land detection & landfall ----------
+async function detectLand(){
+  try{
+    await map.ground.load();
+    const pts=S.samples.map(s=>[s.lon,s.lat]);
+    const res=await map.ground.queryElevation(new Multipoint({points:pts,spatialReference:WGS84}),{demResolution:"auto"});
+    const zs=res.geometry.points.map(p=>p[2]);
+    S.samples.forEach((s,i)=>{ s.elev=zs[i]; s.land=Math.abs(zs[i])>0.3; });
+    let seaRun=0; S.landfall=-1;
+    for(let i=0;i<S.samples.length;i++){ const s=S.samples[i]; if(!s.land){seaRun++;continue;} if(seaRun>=3&&s.wind>=34){S.landfall=i;break;} seaRun=0; }
+    if(S.landfall<0){ // fall back: strongest point that touches land
+      let best=-1; S.samples.forEach((s,i)=>{ if(s.land&&(best<0||s.wind>S.samples[best].wind)) best=i; }); S.landfall=best; }
+    $('camGround').disabled=S.landfall<0; $('surgeGo').disabled=S.landfall<0;
+    if(S.landfall>=0){ const w=Math.max(...S.samples.slice(Math.max(0,S.landfall-6),S.landfall+1).map(s=>s.wind)); $('surgeR').value=M.surgeFor(w); $('surgeV').textContent=(+$('surgeR').value).toFixed(1)+" m"; }
+  }catch(e){ console.warn("Elevation query failed",e); }
+}
+
+// ---------- cities & people ----------
+async function loadCities(){
+  try{
+    const r=S.rain, shift=0;
+    const ext=new Extent({xmin:Math.max(-180,r.lonMin),xmax:Math.min(180,r.lonMax),ymin:r.latMin,ymax:r.latMax,spatialReference:WGS84});
+    const feats=(await query.executeQueryJSON(URL_CITIES,{where:"POP > 0",geometry:ext,outFields:["CITY_NAME","CNTRY_NAME","POP"],returnGeometry:true,outSpatialReference:WGS84,num:2000})).features;
+    const smp=S.samples;
+    S.cities=feats.map(f=>{ const a=f.attributes, g=f.geometry; let t34=null,t64=null,peak=0;
+      for(const s of smp){ const d=M.haversine(g.y,g.x,s.lat,s.lon); if(d>900) continue; const w=M.windAt(s.wind,s.rmw,d); if(w>peak) peak=w;
+        if(w>=34&&t34==null) t34=s.t; if(w>=64&&t64==null) t64=s.t; }
+      return {name:a.CITY_NAME,country:a.CNTRY_NAME,pop:a.POP,lat:g.y,lon:g.x,t34,t64,peak,status:-1,graphic:null};
+    }).filter(c=>c.peak>=20);
+    cityLayer.removeAll();
+    const top=[...S.cities].sort((a,b)=>b.pop-a.pop).slice(0,14);
+    S.cities.forEach(c=>{ c.labeled=top.includes(c); c.graphic=new Graphic({geometry:new Point({x:c.lon,y:c.lat,spatialReference:WGS84}),attributes:{name:c.name}}); cityLayer.add(c.graphic); });
+    S.H=-1; updateUI(true);
+  }catch(e){ console.warn("Cities failed",e); }
+}
+function citySymbol(c,st){
+  const col=st===2?[255,74,61]:st===1?[255,216,74]:[190,205,225];
+  const size=Math.max(7,Math.min(20,4+Math.log10(Math.max(1e4,c.pop))*2.4-8));
+  const layers=[{type:"icon",resource:{primitive:"circle"},size,material:{color:col.concat(st>0?1:0.75)},outline:{color:[10,20,30,0.9],size:1}}];
+  if(c.labeled) layers.push({type:"text",text:c.name,size:11,material:{color:"white"},halo:{color:[0,0,0,0.85],size:1.2},verticalAlignment:"bottom"});
+  return {type:"point-3d",symbolLayers:layers,verticalOffset:c.labeled?{screenLength:18,maxWorldLength:60000,minWorldLength:0}:undefined,callout:c.labeled?{type:"line",size:0.8,color:[255,255,255,0.7]}:undefined};
+}
+function updateImpacts(force){
+  const t=S.t; let H=0,T=0,R=0; const hit=[];
+  for(const c of S.cities){
+    const st=(c.t64!=null&&c.t64<=t)?2:(c.t34!=null&&c.t34<=t)?1:0;
+    if(st===2) H+=c.pop; if(st>=1) T+=c.pop;
+    const rain=S.rain?S.rain.at(c.lat,c.lon):0; if(rain>=100) R+=c.pop;
+    if(st>0) hit.push({c,st,rain});
+    if(c.graphic&&(force||st!==c.status)){ c.status=st; c.graphic.symbol=citySymbol(c,st); }
+  }
+  $('cH').textContent=fmtN(H); $('cT').textContent=fmtN(T); $('cR').textContent=fmtN(R);
+  S.statsNow={H,T,R};
+  hit.sort((a,b)=>b.st-a.st||b.c.pop-a.c.pop);
+  $('cityList').innerHTML=hit.slice(0,6).map(h=>`<li><span>${h.st===2?"🔴":"🟡"} ${h.c.name}, ${h.c.country}</span><span>${fmtN(h.c.pop)} · ${Math.round(h.c.peak*M.KT_KMH)} km/h</span></li>`).join("")||`<li><span>No major cities hit yet</span><span></span></li>`;
+}
+function fmtN(n){ return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1)+" million":n>=1e3?Math.round(n/1e3)+" thousand":String(Math.round(n)); }
+
+// ---------- track ----------
+let trackGraphics=[];
+function buildTrack(){
+  trackLayer.removeAll(); trackGraphics=[];
+  const s=S.samples;
+  // whole path (ghost)
+  const ghost=[]; let cur=[];
+  for(let i=0;i<s.length;i++){ if(i&&Math.abs(s[i].lon-s[i-1].lon)>180){ ghost.push(cur); cur=[]; } cur.push([s[i].lon,s[i].lat]); }
+  ghost.push(cur);
+  trackLayer.add(new Graphic({geometry:new Polyline({paths:ghost.filter(p=>p.length>1),spatialReference:WGS84}),symbol:{type:"simple-line",color:[255,255,255,0.45],width:1.6,style:"short-dot"}}));
+  const step=Math.max(1,Math.round(s.length/400));
+  for(let i=0;i<s.length-1;i+=step){
+    const j=Math.min(s.length-1,i+step); if(Math.abs(s[j].lon-s[i].lon)>180) continue;
+    const g=new Graphic({geometry:new Polyline({paths:[[[s[i].lon,s[i].lat],[s[j].lon,s[j].lat]]],spatialReference:WGS84}),
+      symbol:{type:"simple-line",color:s[i].cat.color,width:s[i].fc?3:4.5,style:s[i].fc?"dash":"solid",cap:"round"},visible:false});
+    g.idx=i; trackGraphics.push(g); trackLayer.add(g);
+  }
+}
+function updateTrack(H){ for(const g of trackGraphics) g.visible=g.idx<H||(g.idx===0&&H>0); }
+
+// ---------- swath ----------
+let swath34=null,swath64=null,swathSteps=[];
+function buildSwaths(){
+  swathLayer.removeAll(); swathSteps=[];
+  swath34=new Graphic({symbol:{type:"simple-fill",color:[255,216,74,0.10],outline:{color:[255,216,74,0.7],width:1}}});
+  swath64=new Graphic({symbol:{type:"simple-fill",color:[255,74,61,0.18],outline:{color:[255,74,61,0.9],width:1.2}}});
+  swathLayer.addMany([swath34,swath64]);
+  const s=S.samples, chunk=6; let c34=null,c64=null;
+  try{
+    for(let k=0;k*chunk<s.length;k++){
+      const g34=[],g64=[];
+      for(let i=k*chunk;i<Math.min(s.length,(k+1)*chunk);i+=2){ const p=s[i];
+        const ctr=new Point({x:p.lon,y:p.lat,spatialReference:WGS84});
+        if(p.r34>0) g34.push(new Circle({center:ctr,radius:p.r34,radiusUnit:"kilometers",geodesic:true,numberOfPoints:36}));
+        if(p.r64>0) g64.push(new Circle({center:ctr,radius:p.r64,radiusUnit:"kilometers",geodesic:true,numberOfPoints:36}));
+      }
+      if(g34.length) c34=unionOperator.executeMany(c34?[c34,...g34]:g34);
+      if(g64.length) c64=unionOperator.executeMany(c64?[c64,...g64]:g64);
+      swathSteps.push({c34,c64});
+    }
+  }catch(e){ console.warn("Swath union failed",e); swathSteps=[]; }
+}
+function updateSwath(H){ const st=swathSteps[Math.min(swathSteps.length-1,Math.floor(H/6))]; swath34.geometry=st&&st.c34||null; swath64.geometry=st&&st.c64||null; }
+
+// ---------- wind rings ----------
+function updateWind(s){
+  windLayer.removeAll(); if(!s) return;
+  const ctr=new Point({x:s.lon,y:s.lat,spatialReference:WGS84});
+  const ring=(r,fill,line,w)=>r>0&&windLayer.add(new Graphic({geometry:new Circle({center:ctr,radius:r,radiusUnit:"kilometers",geodesic:true,numberOfPoints:72}),symbol:{type:"simple-fill",color:fill,outline:{color:line,width:w}}}));
+  ring(s.r34,[255,216,74,0.16],[255,216,74,1],2);
+  ring(s.r64,[255,74,61,0.28],[255,74,61,1],2.4);
+  if(s.wind>=64&&s.rmw) ring(s.rmw*0.55,[20,40,70,0.55],[255,255,255,0.9],1);
+}
+
+// ---------- 3D storm ----------
+let stormGraphics=[];
+function stormSym(kind,h){ return {type:"polygon-3d",symbolLayers:[{type:"extrude",size:h,material:{color:kind==="wall"?[255,255,255,0.72]:[235,242,255,0.55]},edges:{type:"solid",color:[255,255,255,kind==="wall"?0.95:0.75],size:0.7}}]}; }
+function buildStormGraphics(){ stormLayer.removeAll(); stormGraphics=[]; }
+function updateStorm(s){
+  if(!s||!S.show.storm||S.cam==="ground"){ stormLayer.visible=false; return; }
+  stormLayer.visible=true;
+  const shapes=M.stormShapes(s,S.spin), VE=8;
+  while(stormGraphics.length<shapes.length){ const g=new Graphic(); stormGraphics.push(g); stormLayer.add(g); }
+  shapes.forEach((sh,k)=>{ const g=stormGraphics[k];
+    const rings=sh.rings.map(r=>r.map(([x,y])=>[M.normLon(x),y,sh.base*VE]));
+    g.geometry=new Polygon({rings,hasZ:true,spatialReference:WGS84});
+    const hh=Math.round(sh.height*VE/500)*500; if(g._h!==hh||g._k!==sh.kind){ g._h=hh; g._k=sh.kind; g.symbol=stormSym(sh.kind,hh); }
+    g.visible=true; });
+  for(let k=shapes.length;k<stormGraphics.length;k++) stormGraphics[k].visible=false;
+}
+
+// ---------- rain ----------
+const rainCanvas=document.createElement('canvas');
+function updateRain(){ if(!S.rain) return; S.rain.advanceTo(S.H); M.paintRain(S.rain,rainCanvas); rainElement.image=rainCanvas.toDataURL(); }
+(function legend(){ $('rainLegend').innerHTML=[25,50,100,200,300,500].map(v=>{const c=M.rainColor(v+1);return `<span style="background:rgba(${c[0]|0},${c[1]|0},${c[2]|0},1)"></span>`;}).join(""); })();
+
+// ---------- time & UI ----------
+function curSample(){ const s=S.samples; if(!s.length) return null; const i=Math.min(s.length-1,Math.max(0,Math.round((S.t-s[0].t)/3600e3))); return s[i]; }
+function setT(t,force){ const s=S.samples; if(!s.length) return; S.t=Math.max(s[0].t,Math.min(s[s.length-1].t,t)); $('slider').value=(S.t-s[0].t)/3600e3; updateUI(force); }
+function setPlaying(p){ S.playing=p&&S.samples.length>1; if(S.playing&&S.t>=S.samples[S.samples.length-1].t) setT(S.samples[0].t,true); $('playBtn').textContent=S.playing?"❚❚":"▶"; }
+$('playBtn').onclick=()=>setPlaying(!S.playing);
+$('slider').addEventListener('input',e=>{ setPlaying(false); setT(S.samples[0].t+(+e.target.value)*3600e3); });
+$('speed').onchange=e=>S.speed=+e.target.value;
+window.addEventListener('keydown',e=>{ if(e.code==="Space"&&!/INPUT|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); setPlaying(!S.playing);} });
+
+function advance(dt){ if(!S.playing||!S.samples.length) return; const end=S.samples[S.samples.length-1].t; let t=S.t+dt*S.speed*3600e3; if(t>=end){ t=end; setPlaying(false);} setT(t); }
+
+let lastRainPaint=0,lastStorm=0;
+function updateUI(force){
+  const s=curSample(); if(!s) return;
+  const H=s.i, hourChanged=H!==S.H; 
+  if(hourChanged||force){
+    const prevH=S.H; S.H=H;
+    const c=s.cat; const b=$('badge'); b.style.background=c.color; b.innerHTML=`<b>${c.short}</b><small>${c.n>=1?"category":c.n===0?"storm":"depr."}</small>`;
+    $('nowName').textContent=`${S.storm.name}${S.storm.year?" "+S.storm.year:""}`; $('nowCat').textContent=c.label;
+    $('sWind').innerHTML=`${Math.round(s.wind*M.KT_KMH)} <small>km/h · ${Math.round(s.wind*M.KT_MPH)} mph</small>`;
+    $('sPres').innerHTML=s.pres?`${Math.round(s.pres)} <small>hPa</small>`:"–";
+    $('sMove').innerHTML=`${Math.round(s.speed)} <small>km/h ${compass(s.heading)}</small>`;
+    $('sOver').textContent=s.land==null?"…":s.land?"Land":"Ocean";
+    const d=new Date(s.t); $('tlTime').textContent=d.toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"UTC"})+" UTC";
+    $('tlDay').textContent=`Day ${Math.floor((s.t-S.samples[0].t)/86400e3)+1} of ${Math.ceil((S.samples[S.samples.length-1].t-S.samples[0].t)/86400e3)||1}`;
+    $('tlTag').style.display=s.fc?"inline-block":"none";
+    if(!S.vrOpen){
+      updateTrack(H); updateSwath(H); updateWind(S.show.wind?s:null);
+      updateImpacts(force);
+    }
+    tip(s);
+    if(!S.vrOpen&&S.cam==="ground") updateWeather(s);
+    if(S.landfall>=0&&prevH<S.landfall&&H>=S.landfall&&H-prevH<12) flash("LANDFALL");
+  }
+  const now=performance.now();
+  if(!S.vrOpen&&(force||now-lastRainPaint>350)&&S.show.rain){ lastRainPaint=now; updateRain(); }
+  else if(S.vrOpen&&S.rain&&(force||now-lastRainPaint>350)){ lastRainPaint=now; S.rain.advanceTo(S.H); }
+}
+function compass(h){ return ["N","NE","E","SE","S","SW","W","NW"][Math.round(h/45)%8]; }
+function flash(txt){ const b=$('banner'); b.textContent=txt; b.style.opacity=1; setTimeout(()=>b.style.opacity=0,2200); }
+function tip(s){
+  const S_=S.samples, prev=S_[Math.max(0,s.i-24)], p6=S_[Math.max(0,s.i-6)]; let t;
+  if(s.fc) t="This part of the track is a <b>forecast</b>. The real path could be anywhere in the white cone — and the storm’s effects reach far beyond it.";
+  else if(s.wind-prev.wind>=30) t=`<b>Rapid intensification!</b> Winds rose ${Math.round((s.wind-prev.wind)*M.KT_KMH)} km/h in 24 hours. Deep, very warm water and calm upper winds let it grow fast.`;
+  else if(s.land&&s.wind<p6.wind) t="Over land the storm is cut off from its fuel — warm ocean water — and rough ground slows the wind. It is <b>weakening</b>, but its rain can still cause floods.";
+  else if(s.speed<9&&s.wind>=34) t=`Crawling at only ${Math.round(s.speed)} km/h. A <b>slow storm</b> keeps raining on the same places — a big flood risk.`;
+  else if(s.cat.n===5) t="<b>Category 5</b>: winds over 252 km/h. Catastrophic damage — well-built homes can be destroyed.";
+  else if(s.hemi<0) t="Southern Hemisphere: this storm spins <b>clockwise</b>. Northern Hemisphere storms spin anticlockwise because of the Coriolis effect.";
+  else if(s.wind>=64) t="The calm <b>eye</b> is surrounded by the <b>eyewall</b> — a ring of towering thunderstorms with the strongest winds and heaviest rain.";
+  else t="Warm, moist air rises from the ocean, cools, and forms clouds and rain. This releases heat that powers the storm. Water above about <b>26.5 °C</b> is needed.";
+  $('tipTxt').innerHTML=t;
+}
+
+// ---------- camera modes ----------
+function camButtons(){ document.querySelectorAll('[data-cam]').forEach(b=>b.classList.toggle('on',b.dataset.cam===S.cam)); }
+document.querySelectorAll('[data-cam]').forEach(b=>b.onclick=()=>setCam(b.dataset.cam));
+function setCam(mode){
+  S.cam=mode; camButtons();
+  if(mode!=="ground") view.environment.weather=new SunnyWeather({cloudCover:0});
+  if(mode==="globe") flyToStorm();
+  if(mode==="follow"){ S.lastFollow=0; follow(true); }
+  if(mode==="ground"&&S.landfall>=0){
+    const L=S.samples[S.landfall]; const back=(L.heading+180)%360;
+    const [lon,lat]=M.offset(L.lat,L.lonU,1.5*Math.sin(L.heading*Math.PI/180),1.5*Math.cos(L.heading*Math.PI/180));
+    setT(L.t-12*3600e3,true);
+    view.goTo({position:{longitude:M.normLon(lon),latitude:lat,z:Math.max(0,L.elev||0)+220},heading:back,tilt:84},{duration:3000}).catch(()=>{});
+    updateWeather(curSample()); setPlaying(true);
+  }
+  updateStorm(curSample());
+}
+function follow(immediate){
+  const s=curSample(); if(!s) return;
+  const alt=Math.max(700e3,(s.r34||300)*1000*4.2);
+  view.goTo({position:{longitude:s.lon,latitude:s.lat-alt/111e3*0.9,z:alt},tilt:42,heading:0},{animate:!immediate,duration:1200,easing:"linear"}).catch(()=>{});
+}
+function updateWeather(s){
+  if(S.landfall<0||!s) return; const L=S.samples[S.landfall];
+  const d=M.haversine(L.lat,L.lon,s.lat,s.lon), rate=M.rainRate(s.rain,d), w=M.windAt(s.wind,s.rmw,d);
+  view.environment.weather=rate>0.3?new RainyWeather({cloudCover:Math.min(1,0.5+rate/10),precipitation:Math.min(1,rate/15)}):new SunnyWeather({cloudCover:Math.min(1,w/40)});
+  $('tipTxt').innerHTML=`At the landfall point: modelled wind <b>${Math.round(w*M.KT_KMH)} km/h</b>, rain <b>${rate.toFixed(1)} mm per hour</b>.`;
+}
+
+// ---------- surge ----------
+$('surgeR').oninput=e=>{ $('surgeV').textContent=(+e.target.value).toFixed(1)+" m"; if(S.surge) drawSurge(false); };
+$('surgeGo').onclick=()=>drawSurge(true);
+$('surgeOff').onclick=()=>{ surgeLayer.removeAll(); S.surge=null; $('cS').textContent="–"; };
+async function drawSurge(fly){
+  if(S.landfall<0) return; const L=S.samples[S.landfall], h=+$('surgeR').value;
+  const R=Math.min(130,Math.max(35,L.rmw*3.2)); const right=(L.heading+90*L.hemi)%360;
+  const [clon,clat]=M.offset(L.lat,L.lonU,R*0.45*Math.sin(right*Math.PI/180),R*0.45*Math.cos(right*Math.PI/180));
+  const circ=new Circle({center:new Point({x:M.normLon(clon),y:clat,spatialReference:WGS84}),radius:R,radiusUnit:"kilometers",geodesic:true,numberOfPoints:96});
+  const rings=circ.rings.map(r=>r.map(([x,y])=>[x,y,h]));
+  surgeLayer.removeAll();
+  surgeLayer.add(new Graphic({geometry:new Polygon({rings,hasZ:true,spatialReference:WGS84}),symbol:{type:"polygon-3d",symbolLayers:[{type:"water",waveDirection:L.heading,color:[40,120,170,0.9],waveStrength:"moderate",waterbodySize:"large"}]}}));
+  S.surge={center:[M.normLon(clon),clat],R,h};
+  if(fly){ setT(L.t,true); setCam("globe"); S.cam="surge"; camButtons();
+    view.goTo({position:{longitude:M.normLon(clon)+0,latitude:clat-R/111*0.9,z:R*1000*0.55},tilt:62,heading:0},{duration:2500}).catch(()=>{}); }
+  // flooded cities
+  const inside=S.cities.filter(c=>M.haversine(c.lat,c.lon,clat,M.normLon(clon))<=R);
+  if(!inside.length){ $('cS').textContent="0"; $('surgeNote').textContent="No large cities in the flood zone — but smaller towns and villages may be."; return; }
+  try{
+    if(inside.some(c=>c.elev==null)){ const r=await map.ground.queryElevation(new Multipoint({points:inside.map(c=>[c.lon,c.lat]),spatialReference:WGS84})); r.geometry.points.forEach((p,i)=>inside[i].elev=p[2]); }
+    const fl=inside.filter(c=>c.elev<h); const n=fl.reduce((a,c)=>a+c.pop,0);
+    $('cS').textContent=fmtN(n);
+    $('surgeNote').textContent=fl.length?`Below ${h.toFixed(1)} m: ${fl.map(c=>c.name).join(", ")} (city centre height). Real surges depend on the shape of the coast and sea floor.`:`City centres in this area sit above ${h.toFixed(1)} m — but low-lying neighbourhoods may still flood.`;
+  }catch(e){ console.warn(e); }
+}
+
+// ---------- El Niño comparison ----------
+const BASINS={NA:"N. Atlantic",EP:"E./C. Pacific",WP:"W. Pacific",NI:"N. Indian",SI:"S. Indian",SP:"S. Pacific"};
+document.querySelectorAll('#ensoSeg [data-y]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#ensoSeg .btn').forEach(x=>x.classList.toggle('on',x===b));
+  const y=+b.dataset.y; ensoLayer.definitionExpression=y?`year = ${y} AND USA_WIND >= 34`:"1=0"; ensoLayer.visible=!!y;
+  if(y) view.goTo({position:{longitude:-140,latitude:5,z:24e6},tilt:0,heading:0},{duration:1800}).catch(()=>{});
+});
+async function ensoStats(){
+  try{
+    const res={};
+    for(const y of [2015,2010]){
+      const f=await q(URL_HIST,{where:`year = ${y} AND USA_WIND >= 64`,outFields:["SID","BASIN"],returnDistinctValues:true});
+      const c={}; const seen=new Set(); for(const x of f){ const a=x.attributes; if(seen.has(a.SID)) continue; seen.add(a.SID); c[a.BASIN]=(c[a.BASIN]||0)+1; } res[y]=c; }
+    const max=Math.max(1,...Object.values(res).flatMap(o=>Object.values(o)));
+    $('ensoBars').innerHTML=`<div class="b hd"><span></span><span>2015 El Niño</span><span>2010 La Niña</span></div>`+
+      Object.entries(BASINS).map(([k,l])=>`<div class="b"><span>${l}</span>${[2015,2010].map(y=>{const n=res[y][k]||0;return `<div><div class="bar" style="width:${Math.max(12,n/max*100)}%;background:${y===2015?"#ff8f20":"#5ebaff"}">${n}</div></div>`}).join("")}</div>`).join("");
+  }catch(e){ $('ensoBars').innerHTML=`<div class="hd">Could not load counts.</div>`; }
+}
+
+// ---------- layer toggles & tabs ----------
+document.querySelectorAll('#chips input').forEach(i=>i.onchange=()=>{ const l=i.dataset.l; S.show[l]=i.checked;
+  ({storm:()=>updateStorm(curSample()),wind:()=>updateWind(i.checked?curSample():null),swath:()=>swathLayer.visible=i.checked,rain:()=>{rainLayer.visible=i.checked; if(i.checked) updateRain();},track:()=>trackLayer.visible=i.checked,cities:()=>cityLayer.visible=i.checked,cone:()=>coneLayer.visible=i.checked&&!!(S.storm&&S.storm.live)})[l](); });
+function tab(name){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.tab===name)); document.querySelectorAll('.tabbody section').forEach(s=>s.classList.toggle('act',s.id==="t-"+name)); }
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+
+// ---------- main loop ----------
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now;
+  if(!S.vrOpen){
+    advance(dt);
+    S.spin+=dt*(0.25+(curSample()?.wind||0)/90)*(curSample()?.hemi||1);
+    if(now-lastStorm>66){ lastStorm=now; updateStorm(curSample()); }
+    if(S.cam==="follow"&&S.playing&&now-S.lastFollow>1200){ S.lastFollow=now; follow(false); }
+  }
+  requestAnimationFrame(frame);
+}
+function refreshAll(force){ S.H=-1; updateUI(true); updateStorm(curSample()); if(S.show.rain) updateRain(); }
+
+// ---------- VR ----------
+$('vrBtn').onclick=()=>{ if(window.HXVR) window.HXVR.open(); else alert("The VR module is still loading — try again in a moment."); };
+
+// ---------- start ----------
+(async()=>{
+  loading("Loading the globe…");
+  await view.when();
+  loading("Checking for live storms…");
+  await loadLive();
+  fillSelect();
+  const p=new URLSearchParams(location.search).get("storm");
+  if(p&&/^[A-Za-z' -]+-\d{4}$/.test(p)){ const [n,y]=[p.slice(0,p.lastIndexOf("-")),p.slice(p.lastIndexOf("-")+1)]; $('stormSel').value=""; await openHistorical(n,+y,null); }
+  else if(S.live.length){ $('stormSel').value="live:0"; await chooseValue("live:0"); }
+  else { $('stormSel').value="fam:0"; await chooseValue("fam:0"); }
+  requestAnimationFrame(frame);
+  ensoStats();
+})().catch(e=>{ console.error(e); loading(); alert("Something went wrong loading the map: "+(e.message||e)); });
+});
+</script>
+
+<!-- ===================== VR / immersive 3D (Three.js + WebXR, Esri World Imagery) ===================== -->
+<script type="module" id="hx-vr">
+const overlay=document.getElementById('vrOverlay');
+const V={ready:false};
+window.HXVR={open,close};
+document.getElementById('vrClose').onclick=close;
+
+async function open(){
+  overlay.style.display='block';
+  document.getElementById('viewDiv').style.display='none';
+  window.HX&&window.HX.onVR(true);
+  if(!V.ready){ try{ await build(); }catch(e){ console.error(e); alert('Could not start the 3D view: '+(e.message||e)); close(); return; } }
+  V.clock.getDelta(); onResize();
+  V.renderer.setAnimationLoop(loop);
+}
+function close(){
+  if(V.renderer){ V.renderer.setAnimationLoop(null); const ses=V.renderer.xr.getSession(); if(ses) ses.end(); }
+  overlay.style.display='none';
+  document.getElementById('viewDiv').style.display='block';
+  window.HX&&window.HX.onVR(false);
+}
+
+async function build(){
+  const THREE=await import('three');
+  const {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+  const {VRButton}=await import('three/addons/webxr/VRButton.js');
+  V.THREE=THREE;
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2,devicePixelRatio)); renderer.xr.enabled=true; renderer.xr.setReferenceSpaceType('local-floor');
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  overlay.appendChild(renderer.domElement);
+  const vb=VRButton.createButton(renderer); overlay.appendChild(vb);
+  const scene=new THREE.Scene(); scene.background=new THREE.Color(0x02060c);
+  const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.01,200); camera.position.set(0.1,1.55,0.75);
+  const controls=new OrbitControls(camera,renderer.domElement); controls.target.set(0.05,1.2,-1.35); controls.enableDamping=true; controls.update();
+  scene.add(new THREE.HemisphereLight(0xcfe3ff,0x1a2233,1.3));
+  const sun=new THREE.DirectionalLight(0xffffff,1.6); sun.position.set(2,4,3); scene.add(sun);
+  Object.assign(V,{renderer,scene,camera,controls,clock:new THREE.Clock()});
+
+  // stars + floor ring
+  { const n=1800,p=new Float32Array(n*3); for(let i=0;i<n;i++){ const v=new THREE.Vector3().randomDirection().multiplyScalar(40+Math.random()*20); p.set([v.x,Math.abs(v.y)+2,v.z],i*3); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3)); scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:0.08}))); }
+  { const ring=new THREE.Mesh(new THREE.RingGeometry(2.4,2.45,96),new THREE.MeshBasicMaterial({color:0x39d0ff,transparent:true,opacity:0.35,side:THREE.DoubleSide})); ring.rotation.x=-Math.PI/2; scene.add(ring);
+    const disc=new THREE.Mesh(new THREE.CircleGeometry(2.4,96),new THREE.MeshBasicMaterial({color:0x07121f})); disc.rotation.x=-Math.PI/2; disc.position.y=-0.001; scene.add(disc); }
+
+  buildGlobe(); buildModel(); buildHud();
+
+  // controllers
+  V.controllers=[];
+  for(let i=0;i<2;i++){ const c=renderer.xr.getController(i);
+    c.addEventListener('select',()=>window.HX.togglePlay());
+    c.addEventListener('connected',e=>{c.userData.src=e.data;});
+    c.addEventListener('disconnected',()=>{c.userData.src=null;});
+    const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-0.4)]),new THREE.LineBasicMaterial({color:0x39d0ff}));
+    c.add(line); scene.add(c); V.controllers.push(c); }
+  addEventListener('resize',onResize);
+  addEventListener('keydown',e=>{ if(overlay.style.display==='block'&&e.code==='Space'){ e.preventDefault(); } });
+  V.ready=true;
+}
+function onResize(){ if(!V.renderer) return; V.camera.aspect=innerWidth/innerHeight; V.camera.updateProjectionMatrix(); V.renderer.setSize(innerWidth,innerHeight); }
+
+// ---------- shared textures ----------
+function spiralCanvas(size,hemi){
+  const c=document.createElement('canvas'); c.width=c.height=size; const ctx=c.getContext('2d'), img=ctx.createImageData(size,size), d=img.data;
+  const hash=(x,y)=>{ const s=Math.sin(x*127.1+y*311.7)*43758.5453; return s-Math.floor(s); };
+  const noise=(x,y)=>{ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+    const a=hash(xi,yi),b=hash(xi+1,yi),cc=hash(xi,yi+1),dd=hash(xi+1,yi+1); return a+(b-a)*u+(cc-a)*v+(a-b-cc+dd)*u*v; };
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    const dx=(x-size/2)/(size/2), dy=-(y-size/2)/(size/2), r=Math.hypot(dx,dy); const i=(y*size+x)*4;
+    if(r>1){ d[i+3]=0; continue; }
+    const th=Math.atan2(dy,dx);
+    const arm=0.5+0.5*Math.cos(4*th+hemi*6.5*Math.log(r+0.02));
+    const n=noise(x/18,y/18)*0.6+noise(x/7,y/7)*0.4;
+    let dens=Math.pow(arm,2.2)*(1-r)*1.6*(0.6+0.7*n)+ (1-smooth(0.12,0.42,r))*1.1 + Math.exp(-(((r-0.1)/0.035)**2))*0.8;
+    if(r<0.065) dens=0.05*n;
+    dens*=1-smooth(0.8,1,r);
+    const a=Math.max(0,Math.min(1,dens)); const g=215+40*a;
+    d[i]=g; d[i+1]=g; d[i+2]=Math.min(255,g+10); d[i+3]=a*255;
+  }
+  ctx.putImageData(img,0,0); return c;
+}
+function smooth(a,b,x){ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }
+function textSprite(text,{size=48,color='#fff',bg='rgba(8,18,32,.78)',w=0.32}={}){
+  const T=V.THREE, c=document.createElement('canvas'), ctx=c.getContext('2d'); ctx.font=`600 ${size}px Segoe UI,system-ui,sans-serif`;
+  const tw=ctx.measureText(text).width; c.width=tw+size; c.height=size*1.6;
+  ctx.font=`600 ${size}px Segoe UI,system-ui,sans-serif`; ctx.fillStyle=bg; roundRect(ctx,0,0,c.width,c.height,size*0.5); ctx.fill();
+  ctx.fillStyle=color; ctx.textBaseline='middle'; ctx.fillText(text,size/2,c.height/2);
+  const tex=new T.CanvasTexture(c); tex.colorSpace=T.SRGBColorSpace;
+  const s=new T.Sprite(new T.SpriteMaterial({map:tex,depthTest:false,transparent:true})); s.scale.set(w,w*c.height/c.width,1); s.renderOrder=10; return s;
+}
+function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+// ---------- globe with Esri World Imagery ----------
+const GR=0.42, GPOS=[-0.62,1.28,-1.45];
+function ll2v(lat,lon,r){ const T=V.THREE, la=lat*Math.PI/180, lo=lon*Math.PI/180; return new T.Vector3(r*Math.cos(la)*Math.cos(lo), r*Math.sin(la), -r*Math.cos(la)*Math.sin(lo)); }
+function buildGlobe(){
+  const T=V.THREE;
+  const root=new T.Group(); root.position.set(...GPOS); V.scene.add(root);
+  const globe=new T.Group(); root.add(globe); root.rotation.order='XYZ';
+  const mat=new T.MeshStandardMaterial({color:0x1a3355,roughness:0.9,metalness:0});
+  globe.add(new T.Mesh(new T.SphereGeometry(GR,96,64),mat));
+  const atm=new T.Mesh(new T.SphereGeometry(GR*1.04,64,48),new T.MeshBasicMaterial({color:0x4fb4ff,transparent:true,opacity:0.12,side:T.BackSide})); root.add(atm);
+  loadImagery().then(canvas=>{ const tex=new T.CanvasTexture(canvas); tex.colorSpace=T.SRGBColorSpace; tex.anisotropy=8; mat.map=tex; mat.color.set(0xffffff); mat.needsUpdate=true; }).catch(e=>console.warn('Imagery failed',e));
+  // rain overlay
+  const rc=document.createElement('canvas'); rc.width=2048; rc.height=1024; const rtex=new T.CanvasTexture(rc); rtex.colorSpace=T.SRGBColorSpace;
+  globe.add(new T.Mesh(new T.SphereGeometry(GR*1.003,96,64),new T.MeshBasicMaterial({map:rtex,transparent:true,depthWrite:false})));
+  // storm marker
+  V.spiralN=new T.CanvasTexture(spiralCanvas(256,1)); V.spiralS=new T.CanvasTexture(spiralCanvas(256,-1));
+  const marker=new T.Mesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:V.spiralN,transparent:true,depthWrite:false})); globe.add(marker);
+  // label
+  const label=textSprite('Storm',{size:40,w:0.16}); root.add(label);
+  Object.assign(V,{groot:root,globe,rainCanvas:rc,rainTex:rtex,marker,glabel:label,trackKey:null,manualYaw:0,manualUntil:0});
+  const t=textSprite('Earth — track coloured by strength',{size:34,w:0.34,color:'#9fb3cc'}); t.position.set(0,-GR-0.08,0); root.add(t);
+}
+async function loadImagery(){
+  const z=3,n=8,ts=256, merc=document.createElement('canvas'); merc.width=merc.height=n*ts; const mctx=merc.getContext('2d');
+  const jobs=[]; for(let y=0;y<n;y++) for(let x=0;x<n;x++) jobs.push(new Promise(res=>{ const im=new Image(); im.crossOrigin='anonymous';
+    im.onload=()=>{ mctx.drawImage(im,x*ts,y*ts); res(); }; im.onerror=()=>res();
+    im.src=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`; }));
+  await Promise.all(jobs);
+  const W=2048,H=1024, eq=document.createElement('canvas'); eq.width=W; eq.height=H; const ectx=eq.getContext('2d');
+  ectx.fillStyle='#0d1b2e'; ectx.fillRect(0,0,W,H);
+  for(let j=0;j<H;j++){ const lat=90-(j+0.5)*180/H; if(Math.abs(lat)>85) continue; const phi=lat*Math.PI/180;
+    const ym=(1-Math.log(Math.tan(Math.PI/4+phi/2))/Math.PI)/2*merc.height; ectx.drawImage(merc,0,ym,merc.width,1,0,j,W,1); }
+  return eq;
+}
+
+// ---------- hurricane cutaway model ----------
+const MPOS=[0.62,0.92,-1.45], MR=0.55, MH=0.34;
+function buildModel(){
+  const T=V.THREE; const root=new T.Group(); root.position.set(...MPOS); V.scene.add(root);
+  // ocean
+  const oc=document.createElement('canvas'); oc.width=oc.height=256; const o=oc.getContext('2d'); const gr=o.createRadialGradient(128,128,10,128,128,128);
+  gr.addColorStop(0,'#1f7fa8'); gr.addColorStop(0.7,'#0e4f78'); gr.addColorStop(1,'rgba(8,40,70,0)'); o.fillStyle=gr; o.fillRect(0,0,256,256);
+  const ocean=new T.Mesh(new T.CircleGeometry(MR*1.25,64),new T.MeshBasicMaterial({map:new T.CanvasTexture(oc),transparent:true})); ocean.rotation.x=-Math.PI/2; root.add(ocean);
+  const dot=new T.CanvasTexture((()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.5,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return c;})());
+  // cloud particles
+  const N=5200, pos=new Float32Array(N*3), col=new Float32Array(N*3), P=[];
+  for(let i=0;i<N;i++){
+    const top=i>N*0.78; const u=Math.random();
+    let r=top?MR*(0.12+0.95*Math.sqrt(u)):MR*(0.08+0.92*Math.pow(u,0.8)); const th=Math.random()*Math.PI*2;
+    P.push({r0:r/MR,th,top,z:Math.random(),arm:Math.random()}); }
+  const g=new T.BufferGeometry(); g.setAttribute('position',new T.BufferAttribute(pos,3)); g.setAttribute('color',new T.BufferAttribute(col,3));
+  const clouds=new T.Points(g,new T.PointsMaterial({size:0.03,map:dot,vertexColors:true,transparent:true,opacity:0.8,depthWrite:false})); root.add(clouds);
+  // air-flow particles (in-up-out)
+  const F=520, fpos=new Float32Array(F*3), fcol=new Float32Array(F*3), FP=[];
+  for(let i=0;i<F;i++) FP.push({s:Math.random(),th:Math.random()*Math.PI*2});
+  const fg=new T.BufferGeometry(); fg.setAttribute('position',new T.BufferAttribute(fpos,3)); fg.setAttribute('color',new T.BufferAttribute(fcol,3));
+  const flow=new T.Points(fg,new T.PointsMaterial({size:0.022,map:dot,vertexColors:true,transparent:true,depthWrite:false})); root.add(flow);
+  // rain streaks
+  const RN=420, rpos=new Float32Array(RN*6), RP=[]; for(let i=0;i<RN;i++) RP.push({r:0.2+Math.random()*0.8,th:Math.random()*Math.PI*2,y:Math.random()});
+  const rg=new T.BufferGeometry(); rg.setAttribute('position',new T.BufferAttribute(rpos,3));
+  const rain=new T.LineSegments(rg,new T.LineBasicMaterial({color:0x8fd3ff,transparent:true,opacity:0.55})); root.add(rain);
+  // labels
+  const L=(txt,x,y,z,opts)=>{ const s=textSprite(txt,opts); s.position.set(x,y,z); root.add(s); return s; };
+  V.lbl={
+    eye:L('Eye — calm, clear',0,MH*1.25,0.05,{size:36,w:0.2}),
+    wall:L('Eyewall — strongest winds',-0.16,MH*1.02,0.16,{size:34,w:0.24,color:'#ffe775'}),
+    bands:L('Rain bands',0.4,MH*0.55,0.2,{size:34,w:0.14}),
+    inflow:L('Warm, moist air spirals in',0.28,0.03,0.46,{size:32,w:0.26,color:'#8fd3ff'}),
+    up:L('Air rises, cools → clouds & rain',-0.05,MH*0.62,0.42,{size:32,w:0.3,color:'#ffffff'}),
+    out:L('Cold air flows out at the top',0.42,MH*1.2,-0.05,{size:32,w:0.28,color:'#ffb070'}),
+    sea:L('Ocean above 26.5 °C = fuel',-0.35,0.02,0.5,{size:32,w:0.24,color:'#7fe0c0'}),
+    scale:L('Height stretched ×20',0.55,-0.02,-0.35,{size:28,w:0.16,color:'#9fb3cc'})
+  };
+  const title=textSprite('Inside the storm (cut-away)',{size:40,w:0.34,color:'#39d0ff'}); title.position.set(0,MH*1.55,0); root.add(title);
+  Object.assign(V,{mroot:root,clouds,P,pos,col,flow,FP,fpos,fcol,rain,RP,rpos});
+}
+
+// ---------- HUD ----------
+function buildHud(){
+  const T=V.THREE; const c=document.createElement('canvas'); c.width=1024; c.height=300;
+  const tex=new T.CanvasTexture(c); tex.colorSpace=T.SRGBColorSpace;
+  const m=new T.Mesh(new T.PlaneGeometry(1.1,1.1*300/1024),new T.MeshBasicMaterial({map:tex,transparent:true}));
+  m.position.set(0,2.05,-1.75); m.rotation.x=0.12; V.scene.add(m);
+  Object.assign(V,{hud:c,hudTex:tex,hudT:0});
+}
+function drawHud(s){
+  const HX=window.HX, c=V.hud, x=c.getContext('2d'); x.clearRect(0,0,c.width,c.height);
+  x.fillStyle='rgba(8,18,32,.86)'; roundRect(x,0,0,c.width,c.height,36); x.fill();
+  if(!s){ return; }
+  const cat=s.cat; x.fillStyle=cat.color; roundRect(x,26,26,150,150,26); x.fill();
+  x.fillStyle='#10141c'; x.textAlign='center'; x.font='800 88px Segoe UI,system-ui'; x.fillText(cat.short,101,125);
+  x.font='700 20px Segoe UI,system-ui'; x.fillText(cat.n>=1?'CATEGORY':cat.n===0?'STORM':'DEPR.',101,160);
+  x.textAlign='left'; x.fillStyle='#e9f2ff'; x.font='700 48px Segoe UI,system-ui';
+  const st=HX.S.storm; x.fillText(`${st.name}${st.year?' '+st.year:''}`,200,72);
+  x.font='500 28px Segoe UI,system-ui'; x.fillStyle='#9fb3cc';
+  x.fillText(new Date(s.t).toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' UTC'+(s.fc?'  ·  FORECAST':''),200,112);
+  x.fillStyle='#e9f2ff'; x.font='700 34px Segoe UI,system-ui';
+  x.fillText(`${Math.round(s.wind*HX.M.KT_KMH)} km/h   ${s.pres?Math.round(s.pres)+' hPa':''}   moving ${Math.round(s.speed)} km/h`,200,160);
+  const k=HX.stats(); x.font='500 26px Segoe UI,system-ui'; x.fillStyle='#ffb0a8';
+  x.fillText(`People in major cities hit by hurricane-force winds so far: ${fmt(k.H||0)}`,30,225);
+  x.fillStyle='#9fb3cc'; x.font='500 24px Segoe UI,system-ui';
+  x.fillText(HX.S.playing?'▶ playing — trigger to pause':'❚❚ paused — pull trigger (or press space) to play',30,270);
+  V.hudTex.needsUpdate=true;
+}
+function fmt(n){ return n>=1e6?(n/1e6).toFixed(1)+' million':n>=1e3?Math.round(n/1e3)+' thousand':String(Math.round(n)); }
+
+// ---------- per-frame ----------
+function loop(time){
+  const T=V.THREE, dt=Math.min(0.1,V.clock.getDelta()), HX=window.HX; if(!HX) return;
+  // inputs
+  for(const c of V.controllers){ const gp=c.userData.src&&c.userData.src.gamepad; if(!gp||gp.axes.length<4) continue;
+    const ax=gp.axes[2], ay=gp.axes[3];
+    if(Math.abs(ax)>0.2){ V.manualYaw+=ax*dt*1.6; V.manualUntil=time+4000; }
+    if(Math.abs(ay)>0.25){ HX.setT(HX.S.t-ay*dt*24*3600e3); } }
+  HX.advance(dt);
+  const s=HX.sample(); const S=HX.S;
+  if(s){
+    updateGlobe(s,dt,time); updateModel(s,dt);
+    if(time-V.hudT>250){ V.hudT=time; drawHud(s); }
+  }
+  if(!V.renderer.xr.isPresenting) V.controls.update();
+  V.renderer.render(V.scene,V.camera);
+}
+
+function updateGlobe(s,dt,time){
+  const T=V.THREE, HX=window.HX, S=HX.S;
+  // follow the storm: bring it to the front
+  const tx=s.lat*Math.PI/180*0.85, ty=(-s.lon-90)*Math.PI/180;
+  if(time>V.manualUntil){ V.manualYaw*=0.97; }
+  let cy=V.groot.rotation.y, want=ty+V.manualYaw; while(want-cy>Math.PI) want-=2*Math.PI; while(want-cy<-Math.PI) want+=2*Math.PI;
+  V.groot.rotation.y=cy+(want-cy)*Math.min(1,dt*2.5); V.groot.rotation.x+=(tx-V.groot.rotation.x)*Math.min(1,dt*2.5);
+  // track line (rebuild when storm changes)
+  const key=S.storm&&(S.storm.name+S.storm.year+S.samples.length);
+  if(key!==V.trackKey){ V.trackKey=key;
+    if(V.track){ V.globe.remove(V.track); V.track.geometry.dispose(); }
+    const n=S.samples.length, p=new Float32Array(n*3), c=new Float32Array(n*3);
+    S.samples.forEach((q,i)=>{ const v=ll2v(q.lat,q.lon,GR*1.006); p.set([v.x,v.y,v.z],i*3); });
+    const g=new T.BufferGeometry(); g.setAttribute('position',new T.BufferAttribute(p,3)); g.setAttribute('color',new T.BufferAttribute(c,3));
+    V.track=new T.Line(g,new T.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.95})); V.globe.add(V.track); V.trackH=-2; }
+  if(V.trackH!==s.i){ V.trackH=s.i; const c=V.track.geometry.attributes.color, tmp=new T.Color();
+    S.samples.forEach((q,i)=>{ if(i<=s.i){ tmp.set(q.cat.color); } else tmp.setRGB(0.35,0.4,0.5); c.setXYZ(i,tmp.r,tmp.g,tmp.b); }); c.needsUpdate=true; }
+  // marker
+  const p=ll2v(s.lat,s.lon,GR*1.012); const m=V.marker; m.position.copy(p);
+  m.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),p.clone().normalize()); // face outwards
+  V.spinG=(V.spinG||0)+dt*(0.8+s.wind/40)*s.hemi; m.rotateZ(V.spinG); // +: anticlockwise seen from space (N. Hemisphere)
+  const d=Math.max(0.035,2*Math.max(s.r34||0,s.rmw*3)/6371*GR*1.3); m.scale.set(d,d,1);
+  m.material.map=s.hemi>0?V.spiralN:V.spiralS;
+  if(V.glabelName!==S.storm.name){ V.glabelName=S.storm.name; const nl=textSprite(S.storm.name,{size:40,w:0.14}); V.groot.remove(V.glabel); V.glabel=nl; V.groot.add(nl); }
+  V.glabel.position.copy(ll2v(s.lat,s.lon,GR+0.08));
+  // rain overlay
+  if(S.rain&&time-(V.rainT||0)>500){ V.rainT=time; const r=S.rain, ctx=V.rainCanvas.getContext('2d'); ctx.clearRect(0,0,2048,1024);
+    if(!V.rc2) V.rc2=document.createElement('canvas'); HX.M.paintRain(r,V.rc2);
+    const X=l=>(l+180)/360*2048, Y=la=>(90-la)/180*1024;
+    for(const off of [-360,0,360]) ctx.drawImage(V.rc2,X(r.lonMin+off),Y(r.latMax),X(r.lonMax+off)-X(r.lonMin+off),Y(r.latMin)-Y(r.latMax));
+    V.rainTex.needsUpdate=true; }
+}
+
+function updateModel(s,dt){
+  const HX=window.HX, M=HX.M;
+  const strong=s.wind>=64, eye=strong?Math.min(0.2,Math.max(0.07,s.rmw/Math.max(60,s.r34||200)*1.1)):0.03;
+  const wall=eye+0.09; const k=Math.min(1.3,Math.max(0.35,s.wind/110)); const hemi=s.hemi;
+  const cutA=Math.PI*0.25, cutB=Math.PI*0.75; // cut-away wedge facing the viewer (+z side)
+  const inCut=(th)=>{ const a=((-th)%(2*Math.PI)+2*Math.PI)%(2*Math.PI); return a>cutA&&a<cutB; };
+  // clouds
+  const {P,pos,col}=V;
+  for(let i=0;i<P.length;i++){ const q=P[i];
+    const r=q.r0*MR, rn=Math.max(0.02,r/MR);
+    const vr=rn<=wall?rn/wall:Math.pow(wall/rn,0.6); q.th+=hemi*dt*(0.5+2.2*k)*vr/Math.max(0.15,rn)*0.35;
+    let y, show=true, br=1;
+    if(q.top){ y=MH*(0.92+0.1*q.z); br=0.85; if(rn<eye*1.1&&strong) show=false; }
+    else{
+      const band=0.5+0.5*Math.cos(4*q.th+hemi*6.5*Math.log(rn+0.02));
+      if(rn<eye&&strong) show=false;
+      const inWall=rn>=eye&&rn<=wall;
+      const hgt=inWall?MH*(0.95*k+0.1):MH*(0.15+0.55*Math.pow(band,2)*(1-rn))*k;
+      if(!inWall&&band<0.35&&q.arm>0.25) show=false;
+      y=0.02+hgt*q.z; br=inWall?1:0.8+0.2*band;
+    }
+    if(inCut(q.th)&&!(q.top&&rn>0.9)) show=false;
+    pos[i*3]=show?r*Math.cos(q.th):0; pos[i*3+1]=show?y:-50; pos[i*3+2]=show?-r*Math.sin(q.th):0;
+    col[i*3]=br; col[i*3+1]=br; col[i*3+2]=Math.min(1,br+0.05);
+  }
+  V.clouds.geometry.attributes.position.needsUpdate=true; V.clouds.geometry.attributes.color.needsUpdate=true;
+  // flow: in (0-0.55) -> up (0.55-0.72) -> out (0.72-1)
+  const {FP,fpos,fcol}=V;
+  for(let i=0;i<FP.length;i++){ const q=FP[i]; q.s+=dt*(0.05+0.09*k); if(q.s>=1) { q.s-=1; q.th=Math.random()*Math.PI*2; }
+    let r,y,c;
+    if(q.s<0.55){ const u=q.s/0.55; r=MR*(1.1-(1.1-wall)*u); y=0.02+0.02*u; q.th+=hemi*dt*(0.3+1.5*k*u); c=[0.45,0.8,1]; }
+    else if(q.s<0.72){ const u=(q.s-0.55)/0.17; r=MR*wall; y=0.04+MH*0.95*u; q.th+=hemi*dt*1.8*k; c=[0.6+0.4*u,0.85+0.15*u,1]; }
+    else { const u=(q.s-0.72)/0.28; r=MR*(wall+(1.15-wall)*u); y=MH*(1.0+0.05*u); q.th-=hemi*dt*0.25; c=[1,0.75-0.2*u,0.45]; }
+    fpos[i*3]=r*Math.cos(q.th); fpos[i*3+1]=y; fpos[i*3+2]=-r*Math.sin(q.th); fcol.set(c,i*3); }
+  V.flow.geometry.attributes.position.needsUpdate=true; V.flow.geometry.attributes.color.needsUpdate=true;
+  // rain
+  const rr=s.rain?M.rainRate(s.rain,s.rain.rm):0, heavy=Math.min(1,rr/15);
+  const {RP,rpos}=V;
+  for(let i=0;i<RP.length;i++){ const q=RP[i]; q.y-=dt*(0.5+heavy); q.th+=hemi*dt*0.4*k; if(q.y<0){ q.y=1; q.r=wall+Math.random()*(0.95-wall); q.th=Math.random()*Math.PI*2; }
+    const band=0.5+0.5*Math.cos(4*q.th+hemi*6.5*Math.log(q.r+0.02));
+    const vis=(i/RP.length<0.25+0.75*heavy)&&(band>0.45||q.r<wall+0.05)&&!inCut(q.th);
+    const r=q.r*MR, x=r*Math.cos(q.th), z=-r*Math.sin(q.th), y=q.y*MH*0.45;
+    rpos.set(vis?[x,y,z,x,y-0.035,z]:[0,-50,0,0,-50,0],i*6); }
+  V.rain.geometry.attributes.position.needsUpdate=true;
+  V.lbl.eye.visible=strong; V.lbl.wall.visible=strong;
+}
+</script>
+</body>
+</html>
