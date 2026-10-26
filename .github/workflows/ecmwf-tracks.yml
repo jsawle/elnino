@@ -1,0 +1,50 @@
+# Hurricane Explorer lab: fetch ECMWF tropical cyclone forecast tracks (Open Data, CC BY 4.0)
+# and save them as small JSON files in lab/data/ecmwf for the lab page.
+name: ECMWF cyclone tracks (lab)
+
+on:
+  schedule:
+    - cron: "23 */3 * * *"   # every 3 hours; new 00/12 UTC track files appear about 7-9 hours after the run
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "lab/pipeline/**"
+      - ".github/workflows/ecmwf-tracks.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ecmwf-tracks
+  cancel-in-progress: false
+
+jobs:
+  tracks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ecCodes
+        run: pip install eccodes==2.50.0
+
+      - name: Fetch and decode tracks
+        run: python lab/pipeline/ecmwf_tracks.py --out lab/data/ecmwf
+
+      - name: Commit new data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A lab/data/ecmwf
+          if git diff --cached --quiet; then
+            echo "No new run"
+            exit 0
+          fi
+          git commit -m "Update ECMWF cyclone tracks (lab)"
+          git pull --rebase origin main
+          git push origin HEAD:main
