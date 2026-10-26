@@ -1,372 +1,79 @@
 {
- "decoder": "1.0",
- "updated": "2026-10-26T21:04Z",
+ "decoder": "1.1",
+ "updated": "2026-10-26T21:09Z",
  "latest": "2026102612",
  "runs": [
   {
    "id": "2026102612",
    "run": "2026-10-26T12:00Z",
-   "file": "runs/2026102612.json",
+   "decoder": "1.1",
+   "developing": 53,
    "storms": [
     {
      "id": "02B",
      "name": "ARNAB",
      "basin": "B",
-     "genesis": false,
      "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
+      "ifs-ens": 51,
       "aifs-ens": 51
-     }
+     },
+     "start": [
+      15.74,
+      87.04
+     ],
+     "file": "runs/2026102612/02B.json",
+     "kb": 36
     },
     {
      "id": "22E",
      "name": "VANCE",
      "basin": "E",
-     "genesis": false,
      "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
+      "ifs-ens": 51,
       "aifs-ens": 50
-     }
+     },
+     "start": [
+      15.26,
+      -105.52
+     ],
+     "file": "runs/2026102612/22E.json",
+     "kb": 27
     },
     {
      "id": "37W",
      "name": "IN-FA",
      "basin": "W",
-     "genesis": false,
      "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
+      "ifs-ens": 51,
       "aifs-ens": 51
-     }
+     },
+     "start": [
+      14.11,
+      162.83
+     ],
+     "file": "runs/2026102612/37W.json",
+     "kb": 108
     },
     {
      "id": "03C",
      "name": "OLANA",
      "basin": "C",
-     "genesis": false,
      "n": {
       "ifs-ens": 33,
       "aifs-ens": 35
-     }
-    },
-    {
-     "id": "70W",
-     "name": "70W",
-     "basin": "W",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "70E",
-     "name": "70E",
-     "basin": "E",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "70C",
-     "name": "70C",
-     "basin": "C",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "70B",
-     "name": "70B",
-     "basin": "B",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 50,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "71B",
-     "name": "71B",
-     "basin": "B",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 49,
-      "aifs-ens": 41
-     }
-    },
-    {
-     "id": "70S",
-     "name": "70S",
-     "basin": "S",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 46,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "71C",
-     "name": "71C",
-     "basin": "C",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 45,
-      "aifs-ens": 47
-     }
-    },
-    {
-     "id": "70L",
-     "name": "70L",
-     "basin": "L",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 45,
-      "aifs-ens": 49
-     }
-    },
-    {
-     "id": "70P",
-     "name": "70P",
-     "basin": "P",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 44,
-      "aifs-ens": 44
-     }
-    },
-    {
-     "id": "72C",
-     "name": "72C",
-     "basin": "C",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 38,
-      "aifs-ens": 33
-     }
-    },
-    {
-     "id": "71S",
-     "name": "71S",
-     "basin": "S",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 36,
-      "aifs-ens": 51
-     }
-    },
-    {
-     "id": "71E",
-     "name": "71E",
-     "basin": "E",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 33,
-      "aifs-ens": 45
-     }
-    },
-    {
-     "id": "71P",
-     "name": "71P",
-     "basin": "P",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 33,
-      "aifs-ens": 40
-     }
-    },
-    {
-     "id": "72B",
-     "name": "72B",
-     "basin": "B",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 32,
-      "aifs-ens": 25
-     }
-    },
-    {
-     "id": "71W",
-     "name": "71W",
-     "basin": "W",
-     "genesis": true,
-     "n": {
-      "ifs-hres": 1,
-      "ifs-ens": 31,
-      "aifs-ens": 24
-     }
-    },
-    {
-     "id": "71L",
-     "name": "71L",
-     "basin": "L",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 30,
-      "aifs-ens": 34
-     }
-    },
-    {
-     "id": "73C",
-     "name": "73C",
-     "basin": "C",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 27,
-      "aifs-ens": 20
-     }
-    },
-    {
-     "id": "70U",
-     "name": "70U",
-     "basin": "U",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 24,
-      "aifs-ens": 11
-     }
-    },
-    {
-     "id": "72S",
-     "name": "72S",
-     "basin": "S",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 22,
-      "aifs-ens": 38
-     }
-    },
-    {
-     "id": "72P",
-     "name": "72P",
-     "basin": "P",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 22,
-      "aifs-ens": 32
-     }
-    },
-    {
-     "id": "72E",
-     "name": "72E",
-     "basin": "E",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 20,
-      "aifs-ens": 31
-     }
-    },
-    {
-     "id": "72L",
-     "name": "72L",
-     "basin": "L",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 19,
-      "aifs-ens": 14
-     }
-    },
-    {
-     "id": "74C",
-     "name": "74C",
-     "basin": "C",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 15,
-      "aifs-ens": 12
-     }
-    },
-    {
-     "id": "72W",
-     "name": "72W",
-     "basin": "W",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 13,
-      "aifs-ens": 7
-     }
-    },
-    {
-     "id": "73P",
-     "name": "73P",
-     "basin": "P",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 13,
-      "aifs-ens": 17
-     }
-    },
-    {
-     "id": "73B",
-     "name": "73B",
-     "basin": "B",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 11,
-      "aifs-ens": 5
-     }
-    },
-    {
-     "id": "73L",
-     "name": "73L",
-     "basin": "L",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 10,
-      "aifs-ens": 4
-     }
-    },
-    {
-     "id": "73S",
-     "name": "73S",
-     "basin": "S",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 10,
-      "aifs-ens": 24
-     }
-    },
-    {
-     "id": "73E",
-     "name": "73E",
-     "basin": "E",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 7,
-      "aifs-ens": 17
-     }
-    },
-    {
-     "id": "74S",
-     "name": "74S",
-     "basin": "S",
-     "genesis": true,
-     "n": {
-      "ifs-ens": 3,
-      "aifs-ens": 14
-     }
+     },
+     "start": [
+      14.07,
+      -176.73
+     ],
+     "file": "runs/2026102612/03C.json",
+     "kb": 15
     }
    ]
   }
  ],
  "status": {
-  "checked": "2026-10-26T21:04Z",
+  "checked": "2026-10-26T21:09Z",
   "ok": true,
   "message": "Newest run 2026102612 processed"
  },

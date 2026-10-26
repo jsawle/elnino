@@ -1,0 +1,71 @@
+{
+ "run": "2026-10-26T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261026/12z/ifs/0p25/enfo/20261026120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261026/12z/aifs-ens/0p25/enfo/20261026120000-360h-enfo-tf.bufr"
+ },
+ "developing": 53,
+ "storms": [
+  {
+   "id": "02B",
+   "name": "ARNAB",
+   "basin": "B",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    15.74,
+    87.04
+   ],
+   "file": "runs/2026102612/02B.json",
+   "kb": 36
+  },
+  {
+   "id": "22E",
+   "name": "VANCE",
+   "basin": "E",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 50
+   },
+   "start": [
+    15.26,
+    -105.52
+   ],
+   "file": "runs/2026102612/22E.json",
+   "kb": 27
+  },
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    14.11,
+    162.83
+   ],
+   "file": "runs/2026102612/37W.json",
+   "kb": 108
+  },
+  {
+   "id": "03C",
+   "name": "OLANA",
+   "basin": "C",
+   "n": {
+    "ifs-ens": 33,
+    "aifs-ens": 35
+   },
+   "start": [
+    14.07,
+    -176.73
+   ],
+   "file": "runs/2026102612/03C.json",
+   "kb": 15
+  }
+ ]
+}
