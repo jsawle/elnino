@@ -43,6 +43,8 @@ PRODUCTS = [
     {"key": "aifs-ens", "model": "aifs-ens", "stream": "enfo", "label": "ECMWF AIFS ensemble"},
 ]
 GUESS_STEPS = [360, 240, 144, 90]
+# Weather maps live on a data-only branch (only the newest run is kept there)
+WX_BASE = "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
 UA = {"User-Agent": "hurricane-explorer-lab (github.com/jsawle/elnino)"}
 
 
@@ -325,6 +327,9 @@ def update_index(out: Path, status: dict):
                         "developing": m.get("developing", 0), "storms": m["storms"]})
     idx = {"decoder": DECODER_VERSION, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
            "latest": runs[0] if runs else None, "runs": entries, "status": status,
+           "wx": next(({"run": e["id"], "version": m.get("wx", {}).get("version"), "base": WX_BASE}
+                       for e, m in [(entries[0], json.loads((rdir / entries[0]["id"] / "meta.json").read_text()))]
+                       if m.get("wx")), None) if entries else None,
            "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
            "licence": "https://creativecommons.org/licenses/by/4.0/"}
     # Only rewrite when something other than the timestamps changed (keeps commits rare)
@@ -344,6 +349,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="lab/data/ecmwf")
     ap.add_argument("--files", nargs="*", help="decode local BUFR files instead of downloading")
+    ap.add_argument("--wx-out", help="also make weather maps for the newest run, written here (pushed to a data branch)")
+    ap.add_argument("--wx-grib", help="use this local GRIB file for the weather maps (testing)")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -406,7 +413,42 @@ def main():
         break
     else:
         status["message"] = "No track file found in the last 3 days (no active storms, or the server could not be reached)"
+    if a.wx_out:
+        weather_for_newest(out, Path(a.wx_out), status, a.wx_grib)
     update_index(out, status)
+
+
+def weather_for_newest(out: Path, wx_out: Path, status: dict, grib: str | None = None):
+    """Make weather maps for the newest run unless it already has them (this version)."""
+    import ecmwf_weather as wx
+    rdir = out / "runs"
+    runs = sorted((p.name for p in rdir.iterdir() if (p / "meta.json").exists()), reverse=True) if rdir.exists() else []
+    if not runs:
+        return
+    rid = runs[0]
+    mp = rdir / rid / "meta.json"
+    meta = json.loads(mp.read_text())
+    if meta.get("wx", {}).get("version") == wx.WX_VERSION:
+        status["wx"] = f"Weather maps for run {rid}: {meta['wx'].get('storms', 0)} of {len(meta['storms'])} storms"
+        return
+    storms = [json.loads((out / s["file"]).read_text()) for s in meta["storms"]]
+    run = dt.datetime.strptime(meta["run"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=dt.timezone.utc)
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            done = wx.build(run, rid, storms, wx_out, Path(grib) if grib else None, Path(td))
+    except Exception as e:
+        status["wx"] = f"Weather maps failed: {e}"
+        log(status["wx"])
+        return
+    for s in meta["storms"]:
+        if s["id"] in done:
+            s["wx"] = done[s["id"]]
+        else:
+            s.pop("wx", None)
+    meta["wx"] = {"version": wx.WX_VERSION, "storms": len(done)}
+    mp.write_text(json.dumps(meta, indent=1))
+    status["wx"] = f"Weather maps for run {rid}: {len(done)} of {len(storms)} storms"
+    log(status["wx"])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
-# Hurricane Explorer lab: fetch ECMWF tropical cyclone forecast tracks (Open Data, CC BY 4.0)
-# and save them as small JSON files in lab/data/ecmwf for the lab page.
+# Hurricane Explorer lab: fetch ECMWF tropical cyclone forecast tracks and weather maps
+# (ECMWF Open Data, CC BY 4.0). Tracks are saved as small JSON files in lab/data/ecmwf on main.
+# Weather maps (PNG frame sheets, a few MB per storm) go to the data-only branch "lab-weather",
+# which is replaced each time so it never builds up history.
 name: ECMWF cyclone tracks (lab)
 
 on:
@@ -22,7 +24,7 @@ concurrency:
 jobs:
   tracks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -30,13 +32,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install ecCodes
-        run: pip install eccodes==2.50.0
+      - name: Install ecCodes and helpers
+        run: pip install eccodes==2.50.0 ecmwf-opendata==0.3.35 pillow numpy
 
-      - name: Fetch and decode tracks
-        run: python lab/pipeline/ecmwf_tracks.py --out lab/data/ecmwf
+      - name: Fetch and decode tracks and weather maps
+        run: python lab/pipeline/ecmwf_tracks.py --out lab/data/ecmwf --wx-out "$RUNNER_TEMP/wx"
 
-      - name: Commit new data
+      - name: Commit new track data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -48,3 +50,20 @@ jobs:
           git commit -m "Update ECMWF cyclone tracks (lab)"
           git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Publish weather maps to the lab-weather branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -d "$RUNNER_TEMP/wx/wx" ]; then
+            echo "No new weather maps"
+            exit 0
+          fi
+          cd "$RUNNER_TEMP/wx"
+          printf 'ECMWF weather maps for the Hurricane Explorer lab (newest run only).\nAdapted from ECMWF IFS forecast data by ECMWF, licensed under CC BY 4.0.\n' > README.md
+          git init -q -b lab-weather
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "ECMWF weather maps (lab)"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" lab-weather
