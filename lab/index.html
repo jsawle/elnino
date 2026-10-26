@@ -115,7 +115,12 @@ a{color:var(--accent)}
 .ekey li{display:flex;align-items:center;gap:10px;padding:4px 0}
 .ekey svg{flex:none}
 #ensPlay{width:40px;height:40px;padding:0;border-radius:50%;flex:none}
-#ensBox[hidden]{display:none}
+#ensBox[hidden],#wxBox[hidden]{display:none}
+.chip{position:relative}
+.chip input{display:inline-block;position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.chip:has(input:focus-visible){outline:3px solid #ffd24a;outline-offset:2px}
+.wxbar{height:12px;border-radius:6px;margin-top:6px}
+.wxlbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mute);margin-top:3px}
 @media (max-width:820px){
   header{right:12px}header p{display:none}
   #panel{top:auto;height:44%;left:12px;right:12px;width:auto;bottom:88px}
@@ -174,6 +179,7 @@ a{color:var(--accent)}
         <label class="chip"><input type="checkbox" data-l="cities" checked><span class="dot"></span>Cities</label>
         <label class="chip"><input type="checkbox" data-l="cone" checked><span class="dot"></span>Forecast cone</label>
         <label class="chip"><input type="checkbox" data-l="ens" checked><span class="dot"></span>ECMWF tracks <span class="vtag" data-ver="ens"></span></label>
+        <label class="chip"><input type="checkbox" data-l="wx" checked><span class="dot"></span>ECMWF weather <span class="vtag" data-ver="wx"></span></label>
       </div>
       <h2>Camera</h2>
       <div class="seg">
@@ -223,7 +229,23 @@ a{color:var(--accent)}
         <p class="note">The two forecasts were made at different times. Check both times before you compare them.</p>
         <p class="note">Weather models usually forecast weaker top winds than the official forecast for strong storms, so this tab compares <b>where</b> the storm goes, not how strong it is. <span class="vtag" data-ver="match"></span> <span id="ensHow"></span></p>
       </div>
-      <p class="note">Tracks adapted from ECMWF tropical cyclone forecasts by ECMWF, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (<a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noopener">ECMWF Open Data</a>). Not an official forecast.</p>
+      <h2>Weather maps <span class="vtag" data-ver="wx"></span></h2>
+      <p class="note" id="wxStatus" role="status">Weather maps appear for live storms that ECMWF is tracking.</p>
+      <div id="wxBox" hidden>
+        <span class="lbl" id="wxFieldLbl">Colours show</span>
+        <div class="seg" id="wxField" role="group" aria-labelledby="wxFieldLbl">
+          <button class="btn on" data-f="moist" aria-pressed="true">Moisture</button>
+          <button class="btn" data-f="rain" aria-pressed="false">Rain</button>
+          <button class="btn" data-f="none" aria-pressed="false">Off</button>
+        </div>
+        <div class="chips" style="margin-top:10px">
+          <label class="chip"><input type="checkbox" id="wxStreaks" checked><span class="dot"></span>Wind streaks <span class="vtag" data-ver="streaks"></span></label>
+          <label class="chip"><input type="checkbox" id="wxIsobars" checked><span class="dot"></span>Pressure lines <span class="vtag" data-ver="isobars"></span></label>
+        </div>
+        <div id="wxLegend" style="margin-top:10px"></div>
+        <p class="note" id="wxNote"></p>
+      </div>
+      <p class="note">Tracks and weather maps adapted from ECMWF forecasts by ECMWF, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (<a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noopener">ECMWF Open Data</a>). Not an official forecast.</p>
     </section>
 
     <section id="t-impacts">
@@ -282,7 +304,8 @@ a{color:var(--accent)}
       <b>Past storms:</b> Esri Living Atlas <i>Historical Hurricane Tracks</i> (NOAA IBTrACS, 1842–2024).<br>
       <b>People:</b> Esri <i>World Cities</i>.<br>
       <b>Globe:</b> ArcGIS World Imagery and World Elevation.<br>
-      <b>ECMWF forecast tracks (lab):</b> ECMWF Open Data tropical cyclone tracks from the IFS ensemble, IFS HRES and AIFS ensemble, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. A scheduled GitHub Action checks for new 00 and 12 UTC forecasts every 3 hours and keeps about the last four days. <span id="ensUpdated"></span></p>
+      <b>ECMWF forecast tracks (lab):</b> ECMWF Open Data tropical cyclone tracks from the IFS ensemble, IFS HRES and AIFS ensemble, licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. A scheduled GitHub Action checks for new 00 and 12 UTC forecasts every 3 hours and keeps about the last four days. <span id="ensUpdated"></span><br>
+      <b>ECMWF weather maps (lab):</b> ECMWF IFS main forecast at 0.25° (about 28 km): 10 m wind, rain, water vapour in the air (moisture) and sea-level pressure, every 3 hours to 6 days ahead, cut out around each storm. Only the newest forecast is kept. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</p>
       <h2>Model versions</h2>
       <table class="imp vers" id="verTable"></table>
       <h2>What is modelled (not measured)</h2>
@@ -646,7 +669,10 @@ a{color:var(--accent)}
     if(d<1) return [120,215,255,190]; if(d<2) return [60,160,240,205]; if(d<4) return [30,100,220,215]; return [20,45,160,225]; }
   // ---- version register: bump the model's number whenever its maths or data handling changes ----
   const VERSIONS={
-    app:    {v:"1.7.1-lab", date:"2026-10-26", name:"Hurricane Explorer 3D (lab)"},
+    app:    {v:"1.8-lab", date:"2026-10-26", name:"Hurricane Explorer 3D (lab)"},
+    wx:     {v:"1.0",  date:"2026-10-26", name:"ECMWF weather maps",   what:"IFS main forecast, 0.25°, 0–144 h every 3 h, cut out around the storm by the lab pipeline and stored as 8-bit PNG frames (wind ±70 m/s, moisture 0–90 kg/m², pressure 900–1050 hPa, rain on a square-root scale); values blended in a straight line between 3-hourly frames; rain = rain in the 3 hours to that time, shown per hour"},
+    streaks:{v:"1.0",  date:"2026-10-26", name:"Wind streaks",         what:"Particles carried by the 10 m wind, speeded up for display (about 0.35 grid cells per second for each m/s); brighter = faster"},
+    isobars:{v:"1.0",  date:"2026-10-26", name:"Pressure lines",       what:"Lines of equal sea-level pressure every 4 hPa (thicker every 20 hPa), drawn with marching squares after light smoothing; L and H mark the lowest and highest pressure within about 2°"},
     ens:    {v:"1.1",  date:"2026-10-26", name:"ECMWF forecast tracks", what:"IFS and AIFS ensemble tracks (51 forecasts each, including the unperturbed main forecast) from ECMWF Open Data (CC BY 4.0), decoded from BUFR by the lab pipeline; main forecast = IFS HRES where ECMWF sends it separately, else the ensemble control; positions between 6-hourly points joined in straight lines; average = mean position of the forecasts still showing the storm, drawn only while at least half do"},
     spread: {v:"1.0",  date:"2026-10-26", name:"Forecast spread",      what:"Spread = average distance of the ECMWF forecasts from their average position; gap = distance from the official forecast centre to the ECMWF average at the same time"},
     match:  {v:"1.1",  date:"2026-10-26", name:"Storm matching",       what:"Live storm linked to a named ECMWF storm by name (letters only); otherwise the named ECMWF storm whose average start position (worked out by the decoder) is within 300 km of the live storm at the ECMWF start time"},
@@ -1215,7 +1241,7 @@ async function ensoStats(){
 
 // ---------- layer toggles & tabs ----------
 document.querySelectorAll('#chips input').forEach(i=>i.onchange=()=>{ const l=i.dataset.l; S.show[l]=i.checked;
-  ({storm:()=>updateStorm(curSample()),wind:()=>updateWind(i.checked?curSample():null),swath:()=>swathLayer.visible=i.checked,rain:()=>{rainLayer.visible=i.checked; if(i.checked) updateRain();},track:()=>trackLayer.visible=i.checked,cities:()=>cityLayer.visible=i.checked,cone:()=>coneLayer.visible=i.checked&&!!(S.storm&&S.storm.live),ens:()=>{ensLines.visible=ensDots.visible=i.checked;}})[l](); });
+  ({storm:()=>updateStorm(curSample()),wind:()=>updateWind(i.checked?curSample():null),swath:()=>swathLayer.visible=i.checked,rain:()=>{rainLayer.visible=i.checked; if(i.checked) updateRain();},track:()=>trackLayer.visible=i.checked,cities:()=>cityLayer.visible=i.checked,cone:()=>coneLayer.visible=i.checked&&!!(S.storm&&S.storm.live),ens:()=>{ensLines.visible=ensDots.visible=i.checked;},wx:()=>wxShow()})[l](); });
 function tab(name){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.tab===name)); document.querySelectorAll('.tabbody section').forEach(s=>s.classList.toggle('act',s.id==="t-"+name)); }
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
 
@@ -1224,7 +1250,7 @@ let last=performance.now();
 function frame(now){
   const dt=Math.min(0.1,(now-last)/1000); last=now;
   if(!S.vrOpen){
-    advance(dt); ensAdvance(dt);
+    advance(dt); ensAdvance(dt); wxAnimate(dt,now);
     if(now-lastStorm>100){ lastStorm=now; updateStorm(curSample()); }
     animateClouds(curSample(),dt);
     if(S.cam==="follow"&&S.playing&&now-S.lastFollow>1200){ S.lastFollow=now; follow(false); }
@@ -1309,7 +1335,7 @@ function ensMatch(st,entry){
   return best?{s:best,how:`Matched by position: ECMWF storm ${best.id} started ${Math.round(bd)} km from ${st.name}.`}:null;
 }
 
-function ensMsg(text){ $('ensStatus').textContent=text; $('ensBox').hidden=true; }
+function ensMsg(text){ $('ensStatus').textContent=text; $('ensBox').hidden=true; wxClear(); }
 function ensClear(){ const E=S.ens; ensLines.removeAll(); ensDots.removeAll(); E.s=null; E.doc=null; E.tracks=[]; E.hres=null; E.mean=null; E.dots=[]; E.lastH=null; }
 function ensStop(){ const E=S.ens; if(!E) return; E.playing=false; const b=$('ensPlay'); b.textContent="▶"; b.setAttribute('aria-label','Play the forecasts'); }
 
@@ -1327,6 +1353,9 @@ async function ensForStorm(st){
   $('ensRun').innerHTML=runs.map((r,i)=>`<option value="${r.id}">${fmtUTC(Date.parse(r.run))}${i===0?" (newest)":""}</option>`).join("");
   $('ensRun').value=entry.id;
   await ensSelectRun(entry.id,seq);
+  if(seq!==E.seq||!E.s) return;
+  const smp=S.samples; // open at ECMWF's forecast start rather than days earlier
+  if(smp.length&&S.t<E.run){ if(E.run<=smp[smp.length-1].t){ E.hold=false; setT(E.run,true); } else { E.hold=true; ensSetTime(E.run,true); } }
 }
 async function ensSelectRun(id,seq){
   const E=S.ens; seq=seq||++E.seq; ensStop();
@@ -1344,6 +1373,7 @@ async function ensSelectRun(id,seq){
   $('ensStatus').textContent=`ECMWF is tracking ${S.storm.name}: ${nI} IFS and ${nA} AIFS forecasts. Official forecast issued ${S.storm.adv?fmtUTC(S.storm.adv):"(time not given)"}.${dev}`;
   $('ensHow').textContent=E.how;
   $('ensBox').hidden=false;
+  wxForStorm(entry,ref);
   E.hold=false; ensSetTime(S.t,true);
   const c=curSample(); if(c) tip(c);
 }
@@ -1406,6 +1436,7 @@ function ensSetTime(t,force){
     if(gap!=null) say+=off.fc?` The official forecast puts the centre ${kmMiTxt(gap)} from that average.`:` The storm was really ${kmMiTxt(gap)} from that average.`;
   }
   const sum=$('ensSummary'); sum.setAttribute('aria-live',(S.playing||E.playing)?"off":"polite"); sum.textContent=say;
+  wxSetTime(t);
 }
 function ensAdvance(dt){
   const E=S.ens; if(!E.playing||!E.s) return;
@@ -1428,6 +1459,221 @@ $('ensRun').onchange=e=>ensSelectRun(e.target.value);
 document.querySelectorAll('#ensModel [data-m]').forEach(b=>b.onclick=()=>{ const E=S.ens; if(!E.s||b.disabled) return;
   E.model=b.dataset.m; const t=E.E; ensBuild(); ensSetTime(t!=null?t:S.t,true); });
 $('ensFit').onclick=()=>{ const geoms=ensLines.graphics.toArray().map(g=>g.geometry); if(geoms.length) view.goTo({target:geoms,tilt:20,heading:0},{duration:1800}).catch(()=>{}); };
+
+// ---------- LAB: ECMWF weather maps (IFS main forecast; ECMWF Open Data, CC BY 4.0) ----------
+// Frames come from the lab-weather branch (newest run only): wind.png (u, v, rain) and air.png (moisture, pressure).
+const WX_DEFAULT_BASE="https://raw.githubusercontent.com/jsawle/elnino/lab-weather/";
+const WX_CELL_PX=3; // canvas pixels per 0.25° grid cell
+const wxGeo=()=>new ExtentAndRotationGeoreference({extent:new Extent({xmin:0,ymin:0,xmax:1,ymax:1,spatialReference:WGS84})});
+const wxRasterEl=new ImageElement({image:blankPng(),georeference:wxGeo()});
+const wxFlowEl=new ImageElement({image:blankPng(),georeference:wxGeo()});
+const wxRasterLayer=new MediaLayer({source:[wxRasterEl],title:"ECMWF weather map",opacity:0.8,visible:false});
+const wxFlowLayer=new MediaLayer({source:[wxFlowEl],title:"ECMWF wind streaks",opacity:1,visible:false});
+map.add(wxRasterLayer,0); map.add(wxFlowLayer,1);
+const WX_REDUCED=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const WX_CANVAS=new URLSearchParams(location.search).get("wxcanvas")==="1"; // test: hand canvases straight to the map
+S.show.wx=true;
+S.wx={cache:{},key:null,meta:null,F:null,run:0,active:false,inRange:false,field:"moist",streaks:!WX_REDUCED,isobars:true,
+      t:null,lastPaint:0,timer:null,u:null,v:null,rain:null,q:null,p:null,ps:null,parts:[],cos:null,lastPush:0,flip:0,hidRain:false,extK:-1,ext:[]};
+if(WX_REDUCED) $('wxStreaks').checked=false;
+const wxRasterCv=document.createElement('canvas'), wxCellCv=document.createElement('canvas');
+const wxFlowCv=document.createElement('canvas'), wxFlowOut=[document.createElement('canvas'),document.createElement('canvas')];
+
+async function wxImage(url){ // PNG -> ImageData (exact bytes; the PNGs carry no colour profile)
+  if(window.WX_DECODE) return window.WX_DECODE(url); // test hook
+  const r=await fetch(url,{cache:"no-cache"}); if(!r.ok) throw new Error(`HTTP ${r.status}`);
+  const src=URL.createObjectURL(await r.blob());
+  try{
+    const img=new Image(); img.src=src; await img.decode();
+    const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight;
+    const ctx=c.getContext('2d',{willReadFrequently:true}); ctx.drawImage(img,0,0);
+    return ctx.getImageData(0,0,c.width,c.height);
+  } finally { URL.revokeObjectURL(src); }
+}
+function wxFrames(m,wind,air){
+  const {nx,ny,cols}=m, n=nx*ny, F=[];
+  m.steps.forEach((st,k)=>{ const r=Math.floor(k/cols), c=k%cols;
+    const f={u:new Uint8Array(n),v:new Uint8Array(n),rain:new Uint8Array(n),q:new Uint8Array(n),p:new Uint8Array(n)};
+    for(let j=0;j<ny;j++){ let o=((r*ny+j)*wind.width+c*nx)*4, i=j*nx;
+      for(let x=0;x<nx;x++,o+=4,i++){ f.u[i]=wind.data[o]; f.v[i]=wind.data[o+1]; f.rain[i]=wind.data[o+2]; f.q[i]=air.data[o]; f.p[i]=air.data[o+1]; } }
+    F.push(f); });
+  return F;
+}
+function wxMsg(t){ $('wxStatus').textContent=t; }
+function wxClear(){ const W=S.wx; W.active=false; W.key=null; wxRasterLayer.visible=wxFlowLayer.visible=false; $('wxBox').hidden=true; wxRestoreRain(); }
+function wxRestoreRain(){ const W=S.wx; if(W.hidRain){ W.hidRain=false; setChip('rain',true); rainLayer.visible=true; updateRain(); } }
+
+async function wxForStorm(entry,ref){
+  const W=S.wx, ix=S.ens.index, info=ix&&ix.wx;
+  wxClear();
+  if(!info||!ref||!ref.wx||info.run!==entry.id){ wxMsg(info&&info.run!==entry.id?"Weather maps are only kept for ECMWF’s newest forecast. Choose the newest one above to see them.":"There are no ECMWF weather maps for this storm yet."); return; }
+  const key=entry.id+"/"+ref.id, base=info.base||WX_DEFAULT_BASE; W.key=key;
+  try{
+    if(!W.cache[key]){
+      wxMsg("Loading ECMWF weather maps (about 1–3 MB)…");
+      const mUrl=base+ref.wx, dir=mUrl.slice(0,mUrl.lastIndexOf('/')+1);
+      const r=await fetch(mUrl,{cache:"no-cache"}); if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const m=await r.json();
+      const [wind,air]=await Promise.all([wxImage(dir+m.files.wind),wxImage(dir+m.files.air)]);
+      W.cache[key]={m,F:wxFrames(m,wind,air)};
+    }
+    if(W.key!==key) return; // user moved on
+    const c=W.cache[key]; W.meta=c.m; W.F=c.F; W.run=Date.parse(c.m.run);
+    const m=W.meta, n=m.nx*m.ny;
+    W.u=new Float32Array(n); W.v=new Float32Array(n); W.rain=new Float32Array(n); W.q=new Float32Array(n); W.p=new Float32Array(n); W.ps=new Float32Array(n);
+    W.cos=Float32Array.from({length:m.ny},(_,j)=>Math.max(0.15,Math.cos((m.north-j*m.d)*Math.PI/180)));
+    const ext=new Extent({xmin:m.west-m.d/2,xmax:m.west+(m.nx-0.5)*m.d,ymin:m.north-(m.ny-0.5)*m.d,ymax:m.north+m.d/2,spatialReference:WGS84});
+    wxRasterEl.georeference=new ExtentAndRotationGeoreference({extent:ext});
+    wxFlowEl.georeference=new ExtentAndRotationGeoreference({extent:ext});
+    wxRasterCv.width=wxFlowCv.width=wxFlowOut[0].width=wxFlowOut[1].width=m.nx*WX_CELL_PX;
+    wxRasterCv.height=wxFlowCv.height=wxFlowOut[0].height=wxFlowOut[1].height=m.ny*WX_CELL_PX;
+    wxCellCv.width=m.nx; wxCellCv.height=m.ny;
+    W.parts=Array.from({length:Math.min(2600,Math.round(n*0.12))},()=>wxSpawn({}));
+    W.extK=-1; W.active=true; $('wxBox').hidden=false;
+    wxMsg(`From ECMWF’s main forecast (the green line), made ${fmtUTC(W.run)}. Maps run to ${fmtUTC(W.run+m.steps[m.steps.length-1]*H3)}.`);
+    wxLegend(); wxShow(); wxSetTime(S.ens.E!=null?S.ens.E:S.t,true);
+  }catch(e){ console.warn("Weather maps failed",e); if(W.key===key){ W.active=false; wxMsg("Couldn’t load the ECMWF weather maps."); } }
+}
+function wxShow(){
+  const W=S.wx, on=W.active&&S.show.wx;
+  wxRasterLayer.visible=on&&W.inRange&&(W.field!=="none"||W.isobars);
+  wxFlowLayer.visible=on&&W.inRange&&W.streaks;
+  // the app's own modelled rainfall would sit on top of ECMWF's maps, so hide it while they are on
+  if(on&&W.inRange&&W.field!=="none"&&S.show.rain&&!W.hidRain){ W.hidRain=true; setChip('rain',false); rainLayer.visible=false; }
+  if((!on||W.field==="none")&&W.hidRain) wxRestoreRain();
+}
+// Blend the two 3-hourly frames either side of time t
+function wxFieldsAt(t){
+  const W=S.wx, m=W.meta, st=m.steps, h=(t-W.run)/H3;
+  if(!(h>=st[0]&&h<=st[st.length-1])) return null;
+  let k=0; while(k<st.length-2&&st[k+1]<h) k++;
+  const a=Math.min(1,Math.max(0,(h-st[k])/Math.max(1e-6,st[k+1]-st[k]))), A=W.F[k], B=W.F[k+1], n=m.nx*m.ny;
+  const sU=140/255, sQ=90/255, sP=150/255;
+  for(let i=0;i<n;i++){
+    W.u[i]=(A.u[i]+(B.u[i]-A.u[i])*a)*sU-70; W.v[i]=(A.v[i]+(B.v[i]-A.v[i])*a)*sU-70;
+    const ra=(A.rain[i]/255)**2, rb=(B.rain[i]/255)**2; W.rain[i]=(ra+(rb-ra)*a)*256/3; // mm per hour
+    W.q[i]=(A.q[i]+(B.q[i]-A.q[i])*a)*sQ; W.p[i]=900+(A.p[i]+(B.p[i]-A.p[i])*a)*sP;
+  }
+  return {h,k:a<0.5?k:k+1};
+}
+const WX_MOIST=[[15,[68,1,84]],[30,[59,82,139]],[45,[33,145,140]],[57,[94,201,98]],[68,[253,231,37]]]; // viridis (colour-blind safe)
+const WX_RAIN=[[0.2,[158,202,225,0.55]],[1,[66,146,198,0.8]],[3,[33,113,181,0.9]],[6,[106,81,163,0.95]],[12,[174,1,126,1]],[25,[247,104,161,1]],[50,[253,224,239,1]]];
+function wxRamp(stops,v,alpha){
+  if(v<=stops[0][0]) return alpha==null?null:[...stops[0][1].slice(0,3),alpha];
+  for(let i=1;i<stops.length;i++) if(v<=stops[i][0]){ const [v0,c0]=stops[i-1],[v1,c1]=stops[i], f=(v-v0)/(v1-v0);
+    return [0,1,2].map(k=>c0[k]+(c1[k]-c0[k])*f).concat(alpha!=null?alpha:(c0[3]??1)+((c1[3]??1)-(c0[3]??1))*f); }
+  const c=stops[stops.length-1][1]; return [c[0],c[1],c[2],alpha!=null?alpha:(c[3]??1)];
+}
+function wxLegend(){
+  const W=S.wx, grad=(stops,lbl,alpha)=>`<div class="wxbar" style="background:linear-gradient(90deg,${stops.map(([v,c])=>`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`).join(",")})"></div><div class="wxlbl">${lbl}</div>`;
+  let h="";
+  if(W.field==="moist") h+=`<div class="k" style="font-size:12px"><b>Moisture:</b> water vapour in the air above each place (kg of water per m²). Storms feed on very moist air.</div>`+grad(WX_MOIST,"<span>15 dry</span><span>30</span><span>45</span><span>57</span><span>68+ very moist</span>");
+  if(W.field==="rain") h+=`<div class="k" style="font-size:12px"><b>Rain:</b> how hard it is raining (mm per hour).</div>`+grad(WX_RAIN,"<span>0.2</span><span>1</span><span>3</span><span>6</span><span>12</span><span>25</span><span>50+</span>");
+  if(W.isobars) h+=`<p class="note" style="margin-top:8px"><b>Lines:</b> air pressure every 4 hPa (thicker every 20 hPa). <b>L</b> = low pressure centre, <b>H</b> = high. Lines close together mean strong winds.</p>`;
+  if(W.streaks) h+=`<p class="note" style="margin-top:4px"><b>Streaks:</b> wind near the ground, speeded up so you can see it. Brighter = faster.</p>`;
+  $('wxLegend').innerHTML=h;
+}
+// Called whenever the forecast time changes (hourly steps). Painting is throttled.
+function wxSetTime(t,force){
+  const W=S.wx; if(!W.active) return; W.t=t;
+  const now=performance.now();
+  if(!force&&now-W.lastPaint<160){ if(!W.timer) W.timer=setTimeout(()=>{ W.timer=null; wxSetTime(W.t,true); },170); return; }
+  W.lastPaint=now;
+  const r=wxFieldsAt(t), was=W.inRange; W.inRange=!!r;
+  if(!r){ $('wxNote').textContent=t<W.run?`The weather maps start at ${fmtUTC(W.run)}, when ECMWF made this forecast. Move the forecast time forward to see them.`:`The weather maps end at ${fmtUTC(W.run+W.meta.steps[W.meta.steps.length-1]*H3)}.`; wxShow(); return; }
+  if(!was) wxFlowCv.getContext('2d').clearRect(0,0,wxFlowCv.width,wxFlowCv.height);
+  $('wxNote').textContent=`Showing ${fmtUTC(t)} (+${Math.round(r.h)} h).`;
+  wxPaint(r.k); wxShow();
+}
+function wxSmooth(src,dst,nx,ny){ // 3x3 average, so the pressure lines aren't jagged
+  for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){ let s=0,c=0;
+    for(let dj=-1;dj<=1;dj++){ const jj=j+dj; if(jj<0||jj>=ny) continue; for(let di=-1;di<=1;di++){ const ii=i+di; if(ii<0||ii>=nx) continue; s+=src[jj*nx+ii]; c++; } }
+    dst[j*nx+i]=s/c; }
+}
+// marching squares: corner bits a=8 (top-left) b=4 (top-right) c=2 (bottom-right) d=1 (bottom-left); edges T R B L
+const WX_MS={1:[["L","B"]],2:[["B","R"]],3:[["L","R"]],4:[["T","R"]],5:[["T","R"],["L","B"]],6:[["T","B"]],7:[["L","T"]],8:[["L","T"]],9:[["T","B"]],10:[["L","T"],["B","R"]],11:[["T","R"]],12:[["L","R"]],13:[["B","R"]],14:[["L","B"]]};
+function wxContours(ctx,p,nx,ny,s){
+  let lo=Infinity,hi=-Infinity; for(let i=0;i<p.length;i++){ if(p[i]<lo) lo=p[i]; if(p[i]>hi) hi=p[i]; }
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  for(let L=Math.ceil(lo/4)*4;L<=hi;L+=4){
+    const major=L%20===0; ctx.beginPath();
+    for(let j=0;j<ny-1;j++) for(let i=0;i<nx-1;i++){
+      const a=p[j*nx+i], b=p[j*nx+i+1], c=p[(j+1)*nx+i+1], d=p[(j+1)*nx+i];
+      const id=(a>L?8:0)|(b>L?4:0)|(c>L?2:0)|(d>L?1:0); if(!id||id===15) continue;
+      const P={T:()=>[i+(L-a)/(b-a),j],R:()=>[i+1,j+(L-b)/(c-b)],B:()=>[i+(L-d)/(c-d),j+1],L:()=>[i,j+(L-a)/(d-a)]};
+      for(const [e1,e2] of WX_MS[id]){ const p1=P[e1](), p2=P[e2](); ctx.moveTo((p1[0]+0.5)*s,(p1[1]+0.5)*s); ctx.lineTo((p2[0]+0.5)*s,(p2[1]+0.5)*s); }
+    }
+    ctx.strokeStyle="rgba(10,20,35,0.55)"; ctx.lineWidth=major?4:2.6; ctx.stroke(); // dark edge so white lines show on light colours
+    ctx.strokeStyle=major?"rgba(255,255,255,0.95)":"rgba(255,255,255,0.75)"; ctx.lineWidth=major?2:1.2; ctx.stroke();
+  }
+}
+function wxExtremes(k){ // lowest / highest pressure within about 2° (recomputed once per 3-hourly frame)
+  const W=S.wx, m=W.meta, nx=m.nx, ny=m.ny, f=W.F[k], p=new Float32Array(nx*ny), sm=new Float32Array(nx*ny), R=8, out=[];
+  for(let i=0;i<p.length;i++) p[i]=900+f.p[i]*150/255;
+  wxSmooth(p,sm,nx,ny);
+  for(let j=R;j<ny-R;j++) for(let i=R;i<nx-R;i++){
+    const v=sm[j*nx+i]; let isMin=true,isMax=true;
+    for(let dj=-1;dj<=1&&(isMin||isMax);dj++) for(let di=-1;di<=1;di++){ if(!di&&!dj) continue; const w=sm[(j+dj)*nx+i+di]; if(w<=v) isMin=false; if(w>=v) isMax=false; }
+    if(!isMin&&!isMax) continue;
+    let ok=true, sum=0, cnt=0;
+    for(let dj=-R;dj<=R&&ok;dj++) for(let di=-R;di<=R;di++){ const w=sm[(j+dj)*nx+i+di]; if(isMin?w<v:w>v){ ok=false; break; } if(Math.abs(dj)===R||Math.abs(di)===R){ sum+=w; cnt++; } }
+    if(ok&&Math.abs(sum/cnt-v)>=1) out.push({i,j,v,low:isMin});
+  }
+  out.sort((a,b)=>Math.abs(b.v-1013)-Math.abs(a.v-1013));
+  return [...out.filter(o=>o.low).slice(0,3),...out.filter(o=>!o.low).slice(0,3)];
+}
+function wxPaint(k){
+  const W=S.wx, m=W.meta, nx=m.nx, ny=m.ny, s=WX_CELL_PX;
+  const cctx=wxCellCv.getContext('2d'), img=cctx.createImageData(nx,ny), d=img.data;
+  if(W.field!=="none") for(let i=0;i<nx*ny;i++){
+    const c=W.field==="moist"?wxRamp(WX_MOIST,W.q[i],0.85):wxRamp(WX_RAIN,W.rain[i]);
+    if(!c) continue; d[i*4]=c[0]; d[i*4+1]=c[1]; d[i*4+2]=c[2]; d[i*4+3]=Math.round(c[3]*255);
+  }
+  cctx.putImageData(img,0,0);
+  const ctx=wxRasterCv.getContext('2d'); ctx.clearRect(0,0,wxRasterCv.width,wxRasterCv.height);
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(wxCellCv,0,0,nx*s,ny*s);
+  if(W.isobars){
+    wxSmooth(W.p,W.ps,nx,ny); wxContours(ctx,W.ps,nx,ny,s);
+    if(W.extK!==k){ W.extK=k; W.ext=wxExtremes(k); }
+    ctx.textAlign="center"; ctx.textBaseline="middle"; const ff=getComputedStyle(document.body).fontFamily||"sans-serif";
+    for(const e of W.ext){ const x=(e.i+0.5)*s, y=(e.j+0.5)*s;
+      ctx.font=`800 ${8*s}px ${ff}`; ctx.lineWidth=s; ctx.strokeStyle="rgba(0,0,0,0.8)";
+      ctx.strokeText(e.low?"L":"H",x,y); ctx.fillStyle=e.low?"#ff6b5e":"#7cc7ff"; ctx.fillText(e.low?"L":"H",x,y);
+      ctx.font=`700 ${4*s}px sans-serif`; ctx.strokeText(String(Math.round(e.v)),x,y+6*s); ctx.fillStyle="#fff"; ctx.fillText(String(Math.round(e.v)),x,y+6*s); }
+  }
+  wxRasterEl.image=WX_CANVAS?wxCopy(wxRasterCv,"raster"):wxRasterCv.toDataURL();
+}
+// ?wxcanvas=1: hand the map a copy, alternating between two canvases so each update is a new image
+const wxBufs={raster:[document.createElement('canvas'),document.createElement('canvas')],flow:wxFlowOut};
+function wxCopy(cv,which){ const b=wxBufs[which]; b.i=(b.i||0)^1; const o=b[b.i]; o.width=cv.width; o.height=cv.height; o.getContext('2d').drawImage(cv,0,0); return o; }
+function wxSpawn(p){ const m=S.wx.meta; p.x=Math.random()*(m.nx-1); p.y=Math.random()*(m.ny-1); p.age=0; p.max=40+Math.random()*70; return p; }
+// Wind streaks: move particles with the wind every frame; hand the picture to the map about 8 times a second
+function wxAnimate(dt,now){
+  const W=S.wx; if(!W.active||!W.inRange||!W.streaks||!S.show.wx||S.vrOpen) return;
+  const m=W.meta, nx=m.nx, ny=m.ny, s=WX_CELL_PX, ctx=wxFlowCv.getContext('2d'), K=0.35*Math.min(dt,0.05);
+  ctx.globalCompositeOperation="destination-in"; ctx.fillStyle="rgba(0,0,0,0.9)"; ctx.fillRect(0,0,wxFlowCv.width,wxFlowCv.height);
+  ctx.globalCompositeOperation="source-over"; ctx.lineCap="round"; ctx.lineWidth=1.3;
+  const bins=[[],[],[]];
+  for(const p of W.parts){
+    const i=p.x|0, j=p.y|0;
+    if(i<0||j<0||i>=nx-1||j>=ny-1||++p.age>p.max){ wxSpawn(p); continue; }
+    const fx=p.x-i, fy=p.y-j, o=j*nx+i;
+    const u=(W.u[o]*(1-fx)+W.u[o+1]*fx)*(1-fy)+(W.u[o+nx]*(1-fx)+W.u[o+nx+1]*fx)*fy;
+    const v=(W.v[o]*(1-fx)+W.v[o+1]*fx)*(1-fy)+(W.v[o+nx]*(1-fx)+W.v[o+nx+1]*fx)*fy;
+    const sp=Math.hypot(u,v), x0=p.x, y0=p.y;
+    p.x+=u*K/W.cos[j]; p.y-=v*K;
+    bins[sp<8?0:sp<17?1:2].push(x0,y0,p.x,p.y);
+  }
+  [0.4,0.7,0.95].forEach((a,b)=>{ const L=bins[b]; if(!L.length) return; ctx.beginPath();
+    for(let q=0;q<L.length;q+=4){ ctx.moveTo((L[q]+0.5)*s,(L[q+1]+0.5)*s); ctx.lineTo((L[q+2]+0.5)*s,(L[q+3]+0.5)*s); }
+    ctx.strokeStyle=`rgba(255,255,255,${a})`; ctx.stroke(); });
+  if(now-W.lastPush>125){ W.lastPush=now; wxFlowEl.image=WX_CANVAS?wxCopy(wxFlowCv,"flow"):wxFlowCv.toDataURL(); }
+}
+document.querySelectorAll('#wxField [data-f]').forEach(b=>b.onclick=()=>{ const W=S.wx; W.field=b.dataset.f;
+  document.querySelectorAll('#wxField [data-f]').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); });
+  wxLegend(); if(W.active&&W.t!=null) wxSetTime(W.t,true); else wxShow(); });
+$('wxStreaks').onchange=e=>{ S.wx.streaks=e.target.checked; if(!e.target.checked) wxFlowCv.getContext('2d').clearRect(0,0,wxFlowCv.width,wxFlowCv.height); wxLegend(); wxShow(); };
+$('wxIsobars').onchange=e=>{ S.wx.isobars=e.target.checked; wxLegend(); if(S.wx.active&&S.wx.t!=null) wxSetTime(S.wx.t,true); };
 
 // ---------- VR ----------
 $('vrBtn').onclick=()=>{ if(window.HXVR) window.HXVR.open(); else alert("The VR module is still loading — try again in a moment."); };
