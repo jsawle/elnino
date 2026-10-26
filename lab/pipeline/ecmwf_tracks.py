@@ -27,7 +27,7 @@ from pathlib import Path
 
 import eccodes as ec
 
-DECODER_VERSION = "1.0"   # bump when decoding or data handling changes
+DECODER_VERSION = "1.1"   # bump when decoding or data handling changes
 KEEP_RUNS = 8             # archive size (00 and 12 UTC runs, about 4 days)
 MS_TO_KT = 1.943844
 
@@ -206,46 +206,72 @@ def decode_file(path: str, source: str) -> tuple[dt.datetime | None, list[dict]]
 
 
 def add_product(run_storms: dict, key: str, storms: list[dict]) -> bool:
-    """Store one product's storms. The deterministic (HRES) track can sit inside
-    the IFS ensemble file as forecast type 0, so it is split out into ifs-hres."""
+    """Store one product's storms.
+
+    Ensemble files hold 50 perturbed forecasts plus an unperturbed one. In older
+    files the unperturbed control is forecast type 1 and the HRES (type 0) is a
+    52nd, separate forecast, so it is split out into ifs-hres. In current files
+    (2026) there is no type 1: the type 0 forecast is the ensemble's control,
+    so it stays in the ensemble as its 51st member."""
     if key == "ifs-hres":
-        if "ifs-hres" in run_storms:
-            return False  # already taken from the ensemble file
+        if "ifs-hres" in run_storms or run_storms.get("_unperturbed"):
+            return False  # already have the unperturbed forecast
         for s in storms:
             for t in s["tracks"]:
                 t["role"] = "hres"
     if key in ("ifs-ens", "aifs-ens"):
         hres = []
+        # decide per file: any type 1 forecast means the older layout (separate control and HRES)
+        separate_control = any(t["role"] == "control" for s in storms for t in s["tracks"])
         for s in storms:
             h = [t for t in s["tracks"] if t["role"] == "hres"]
-            s["tracks"] = [t for t in s["tracks"] if t["role"] != "hres"]
-            if h and key == "ifs-ens":
-                hres.append({**s, "tracks": h, "source": "ifs-hres"})
+            if not h:
+                continue
+            if separate_control:
+                s["tracks"] = [t for t in s["tracks"] if t["role"] != "hres"]
+                if key == "ifs-ens":
+                    hres.append({**s, "tracks": h, "source": "ifs-hres"})
+            else:
+                for t in h:
+                    t["role"] = "control"
+                if key == "ifs-ens":
+                    run_storms["_unperturbed"] = True
         if hres:
             run_storms["ifs-hres"] = hres
     run_storms[key] = storms
     return True
 
 
-def merge(run_storms: dict[str, list[dict]]) -> list[dict]:
-    """Combine storms from each product by storm ID into one list."""
+def merge(run_storms: dict[str, list[dict]]) -> tuple[list[dict], int]:
+    """Combine storms from each product by storm ID. Developing systems that have
+    no official name yet (IDs 70+) are counted but their tracks are not kept."""
     out: dict[str, dict] = {}
     for key, storms in run_storms.items():
+        if key.startswith("_"):
+            continue
         for s in storms:
             o = out.setdefault(s["id"], {"id": s["id"], "name": s["name"], "basin": s["basin"],
                                          "genesis": s["genesis"], "sources": {}})
             if o["name"] == o["id"] and s["name"] != s["id"]:
                 o["name"] = s["name"]
             o["sources"][key] = s["tracks"]
-    res = []
-    for o in out.values():
-        n_ens = len(o["sources"].get("ifs-ens", []))
-        # Keep named storms, and developing systems that at least 10 forecasts show
-        if o["genesis"] and n_ens < 10 and len(o["sources"].get("aifs-ens", [])) < 10:
-            continue
-        res.append(o)
-    res.sort(key=lambda o: (o["genesis"], -len(o["sources"].get("ifs-ens", []))))
-    return res
+    named = [o for o in out.values() if not o["genesis"]]
+    developing = sum(1 for o in out.values() if o["genesis"])
+    named.sort(key=lambda o: -len(o["sources"].get("ifs-ens", [])))
+    return named, developing
+
+
+def start_position(storm: dict):
+    """Average position at the forecast start (hour 0), for matching storms in the app."""
+    for key in ("ifs-ens", "aifs-ens", "ifs-hres"):
+        pts = [(t["lat"][0], t["lon"][0]) for t in storm["sources"].get(key, []) if t["t"][0] == 0]
+        if pts:
+            x = y = z = 0.0
+            for la, lo in pts:
+                la, lo = math.radians(la), math.radians(lo)
+                x += math.cos(la) * math.cos(lo); y += math.cos(la) * math.sin(lo); z += math.sin(la)
+            return [round(math.degrees(math.atan2(z, math.hypot(x, y))), 2), round(math.degrees(math.atan2(y, x)), 2)]
+    return None
 
 
 # ---------------------------------------------------------------- main
@@ -256,31 +282,47 @@ def candidate_runs(now: dt.datetime, days=3):
         yield t - dt.timedelta(hours=12 * i)
 
 
-def write_run(out: Path, run: dt.datetime, storms: list[dict], urls: dict, note: str = ""):
+def write_run(out: Path, run: dt.datetime, merged: tuple, urls: dict, note: str = ""):
+    storms, developing = merged
     rid = run.strftime("%Y%m%d%H")
-    doc = {"run": run.strftime("%Y-%m-%dT%H:%MZ"), "decoder": DECODER_VERSION,
-           "files": urls, "storms": storms,
-           "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0"}
-    (out / "runs").mkdir(parents=True, exist_ok=True)
-    p = out / "runs" / f"{rid}.json"
-    p.write_text(json.dumps(doc, separators=(",", ":")))
-    log(f"wrote {p} ({p.stat().st_size // 1024} KB, {len(storms)} storms) {note}")
+    d = out / "runs" / rid
+    if d.exists():
+        for f in d.glob("*.json"):
+            f.unlink()
+    d.mkdir(parents=True, exist_ok=True)
+    meta = {"run": run.strftime("%Y-%m-%dT%H:%MZ"), "decoder": DECODER_VERSION, "files": urls,
+            "developing": developing, "storms": []}
+    for s in storms:
+        fn = re.sub(r"[^A-Za-z0-9]", "", s["id"]) + ".json"
+        doc = {"run": meta["run"], "decoder": DECODER_VERSION, **s,
+               "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0"}
+        (d / fn).write_text(json.dumps(doc, separators=(",", ":")))
+        meta["storms"].append({"id": s["id"], "name": s["name"], "basin": s["basin"],
+                               "n": {k: len(v) for k, v in s["sources"].items()},
+                               "start": start_position(s), "file": f"runs/{rid}/{fn}",
+                               "kb": round((d / fn).stat().st_size / 1024)})
+    (d / "meta.json").write_text(json.dumps(meta, indent=1))
+    log(f"wrote {d} ({len(storms)} named storms, {developing} developing systems not kept) {note}")
     return rid
 
 
 def update_index(out: Path, status: dict):
     idx_p = out / "index.json"
-    runs = sorted((p.stem for p in (out / "runs").glob("*.json")), reverse=True) if (out / "runs").exists() else []
+    rdir = out / "runs"
+    rdir.mkdir(parents=True, exist_ok=True)
+    for legacy in rdir.glob("*.json"):  # decoder 1.0 wrote one file per run
+        legacy.unlink()
+    runs = sorted((p.name for p in rdir.iterdir() if (p / "meta.json").exists()), reverse=True)
     for old in runs[KEEP_RUNS:]:
-        (out / "runs" / f"{old}.json").unlink()
+        for f in (rdir / old).glob("*"):
+            f.unlink()
+        (rdir / old).rmdir()
     runs = runs[:KEEP_RUNS]
     entries = []
     for rid in runs:
-        d = json.loads((out / "runs" / f"{rid}.json").read_text())
-        entries.append({"id": rid, "run": d["run"], "file": f"runs/{rid}.json",
-                        "storms": [{"id": s["id"], "name": s["name"], "basin": s["basin"],
-                                    "genesis": s["genesis"],
-                                    "n": {k: len(v) for k, v in s["sources"].items()}} for s in d["storms"]]})
+        m = json.loads((rdir / rid / "meta.json").read_text())
+        entries.append({"id": rid, "run": m["run"], "decoder": m.get("decoder"),
+                        "developing": m.get("developing", 0), "storms": m["storms"]})
     idx = {"decoder": DECODER_VERSION, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
            "latest": runs[0] if runs else None, "runs": entries, "status": status,
            "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
@@ -320,7 +362,15 @@ def main():
         update_index(out, status)
         return
 
-    existing = {p.stem for p in (out / "runs").glob("*.json")} if (out / "runs").exists() else set()
+    # a run counts as done only if it was decoded by this decoder version
+    existing = set()
+    if (out / "runs").exists():
+        for p in (out / "runs").iterdir():
+            try:
+                if json.loads((p / "meta.json").read_text()).get("decoder") == DECODER_VERSION:
+                    existing.add(p.name)
+            except Exception:
+                pass
     for run in candidate_runs(now):
         if run > now - dt.timedelta(hours=5):
             continue  # too early for any track file
