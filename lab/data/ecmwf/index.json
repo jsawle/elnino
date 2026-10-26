@@ -1,6 +1,6 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-26T21:09Z",
+ "updated": "2026-10-26T21:31Z",
  "latest": "2026102612",
  "runs": [
   {
@@ -22,7 +22,8 @@
       87.04
      ],
      "file": "runs/2026102612/02B.json",
-     "kb": 36
+     "kb": 36,
+     "wx": "wx/2026102612/02B/meta.json"
     },
     {
      "id": "22E",
@@ -37,7 +38,8 @@
       -105.52
      ],
      "file": "runs/2026102612/22E.json",
-     "kb": 27
+     "kb": 27,
+     "wx": "wx/2026102612/22E/meta.json"
     },
     {
      "id": "37W",
@@ -52,7 +54,8 @@
       162.83
      ],
      "file": "runs/2026102612/37W.json",
-     "kb": 108
+     "kb": 108,
+     "wx": "wx/2026102612/37W/meta.json"
     },
     {
      "id": "03C",
@@ -67,15 +70,22 @@
       -176.73
      ],
      "file": "runs/2026102612/03C.json",
-     "kb": 15
+     "kb": 15,
+     "wx": "wx/2026102612/03C/meta.json"
     }
    ]
   }
  ],
  "status": {
-  "checked": "2026-10-26T21:09Z",
+  "checked": "2026-10-26T21:29Z",
   "ok": true,
-  "message": "Newest run 2026102612 processed"
+  "message": "Newest run 2026102612 processed",
+  "wx": "Weather maps for run 2026102612: 4 of 4 storms"
+ },
+ "wx": {
+  "run": "2026102612",
+  "version": "1.0",
+  "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
  "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
  "licence": "https://creativecommons.org/licenses/by/4.0/"
