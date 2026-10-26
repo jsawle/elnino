@@ -217,7 +217,7 @@ a{color:var(--accent)}
         <ul class="ekey">
           <li><svg width="44" height="10" aria-hidden="true"><line x1="2" y1="5" x2="42" y2="5" stroke="#c8a0ff" stroke-opacity=".7" stroke-width="1.5"/></svg>One ECMWF forecast</li>
           <li><svg width="44" height="10" aria-hidden="true"><line x1="2" y1="5" x2="42" y2="5" stroke="#efe2ff" stroke-width="3.5" stroke-dasharray="10 5"/></svg>ECMWF average (when at least half still show the storm)</li>
-          <li><svg width="44" height="10" aria-hidden="true"><line x1="2" y1="5" x2="42" y2="5" stroke="#78ff96" stroke-width="2.5" stroke-dasharray="8 3 2 3"/></svg>ECMWF single high-detail forecast (IFS only)</li>
+          <li><svg width="44" height="10" aria-hidden="true"><line x1="2" y1="5" x2="42" y2="5" stroke="#78ff96" stroke-width="2.5" stroke-dasharray="8 3 2 3"/></svg>ECMWF main forecast, started from its best estimate of the weather now (the others start slightly differently)</li>
           <li><svg width="44" height="14" aria-hidden="true"><rect x="2" y="2" width="40" height="10" rx="3" fill="#ffffff" fill-opacity=".14" stroke="#fff" stroke-dasharray="4 3"/></svg>Official forecast cone (NHC or JTWC)</li>
         </ul>
         <p class="note">The two forecasts were made at different times. Check both times before you compare them.</p>
@@ -646,10 +646,10 @@ a{color:var(--accent)}
     if(d<1) return [120,215,255,190]; if(d<2) return [60,160,240,205]; if(d<4) return [30,100,220,215]; return [20,45,160,225]; }
   // ---- version register: bump the model's number whenever its maths or data handling changes ----
   const VERSIONS={
-    app:    {v:"1.7-lab", date:"2026-10-26", name:"Hurricane Explorer 3D (lab)"},
-    ens:    {v:"1.0",  date:"2026-10-26", name:"ECMWF forecast tracks", what:"IFS ensemble, IFS HRES and AIFS ensemble tracks from ECMWF Open Data (CC BY 4.0), decoded from BUFR by the lab pipeline; positions between 6-hourly points joined in straight lines; average = mean position of the forecasts still showing the storm, drawn only while at least half do"},
+    app:    {v:"1.7.1-lab", date:"2026-10-26", name:"Hurricane Explorer 3D (lab)"},
+    ens:    {v:"1.1",  date:"2026-10-26", name:"ECMWF forecast tracks", what:"IFS and AIFS ensemble tracks (51 forecasts each, including the unperturbed main forecast) from ECMWF Open Data (CC BY 4.0), decoded from BUFR by the lab pipeline; main forecast = IFS HRES where ECMWF sends it separately, else the ensemble control; positions between 6-hourly points joined in straight lines; average = mean position of the forecasts still showing the storm, drawn only while at least half do"},
     spread: {v:"1.0",  date:"2026-10-26", name:"Forecast spread",      what:"Spread = average distance of the ECMWF forecasts from their average position; gap = distance from the official forecast centre to the ECMWF average at the same time"},
-    match:  {v:"1.0",  date:"2026-10-26", name:"Storm matching",       what:"Live storm linked to an ECMWF storm by name (letters only); otherwise the ECMWF storm whose average start position is within 300 km of the live storm at the ECMWF start time"},
+    match:  {v:"1.1",  date:"2026-10-26", name:"Storm matching",       what:"Live storm linked to a named ECMWF storm by name (letters only); otherwise the named ECMWF storm whose average start position (worked out by the decoder) is within 300 km of the live storm at the ECMWF start time"},
     track:  {v:"1.1",  date:"2026-09-24", name:"Track & pressure data", what:"Hourly track from NHC/JTWC live feed or IBTrACS; ignores placeholder values (e.g. MSLP 9999); pressure only between real readings"},
     wind:   {v:"1.0",  date:"2026-09-24", name:"Wind zones",            what:"Modified Rankine vortex; eye radius from Willoughby, Darling & Rahn (2006)"},
     rain:   {v:"1.0",  date:"2026-09-24", name:"Rainfall",              what:"R-CLIPER-style radial rain profile (after Tuleya et al. 2007), summed hourly along the track"},
@@ -1265,12 +1265,10 @@ async function ensLoadIndex(){
   const ix=S.ens.index=await ensFetch("index.json");
   if(!ix) return;
   if(ix.updated) $('ensUpdated').textContent=`Tracks last checked ${fmtUTC(Date.parse(ix.updated))}.`;
-  $('verTable').insertAdjacentHTML('beforeend',`<tr><td>ECMWF track decoder</td><td>v${ix.decoder}<small>lab pipeline (GitHub Action)</small><small>Reads ECMWF tropical cyclone BUFR files with ecCodes and keeps each forecast’s 6-hourly centre position, pressure and top wind</small></td></tr>`);
+  $('verTable').insertAdjacentHTML('beforeend',`<tr><td>ECMWF track decoder</td><td>v${ix.decoder}<small>lab pipeline (GitHub Action)</small><small>Reads ECMWF tropical cyclone BUFR files with ecCodes and keeps each forecast’s centre positions, pressure and top wind for named storms (developing systems are only counted); one file per storm</small></td></tr>`);
 }
-async function ensRunDoc(id){
-  const E=S.ens;
-  if(!(id in E.docs)){ const r=E.index.runs.find(x=>x.id===id); E.docs[id]=r?await ensFetch(r.file):null; }
-  return E.docs[id];
+async function ensStormDoc(file){ // one small file per storm per forecast run
+  const E=S.ens; if(!(file in E.docs)) E.docs[file]=await ensFetch(file); return E.docs[file];
 }
 function ensPrep(tr,run){
   const T=tr.t.map(h=>run+h*H3), lonU=[]; let prev=tr.lon[0];
@@ -1295,21 +1293,19 @@ function ensPaths(pts){ const paths=[]; let cur=[];
   if(cur.length>1) paths.push(cur); return paths; }
 const ensNeed=()=>Math.max(3,Math.ceil(S.ens.tracks.length/2));
 
-// Match the chosen live storm to an ECMWF storm: by name, else by start position (within 300 km)
-function ensMatch(st,doc){
-  if(!st||!st.live||!doc||!doc.storms) return null;
+// Match the chosen live storm to an ECMWF storm in one forecast run (an index entry):
+// by name, else by the ECMWF storm's average start position (within 300 km)
+function ensMatch(st,entry){
+  if(!st||!st.live||!entry||!entry.storms) return null;
   const nm=normName(st.name);
-  const byName=doc.storms.find(x=>!hasDigit(x.name)&&normName(x.name)===nm);
+  const byName=entry.storms.find(x=>!hasDigit(x.name)&&normName(x.name)===nm);
   if(byName) return {s:byName,how:`Matched to ECMWF storm ${byName.id} by name.`};
-  const run=Date.parse(doc.run), smp=S.samples; if(!smp.length) return null;
+  const run=Date.parse(entry.run), smp=S.samples; if(!smp.length) return null;
   if(run<smp[0].t-6*H3||run>smp[smp.length-1].t) return null;
   const p=smp[Math.min(smp.length-1,Math.max(0,Math.round((run-smp[0].t)/H3)))];
   let best=null,bd=300;
-  for(const x of doc.storms){
-    const src=x.sources["ifs-ens"]||x.sources["aifs-ens"]||x.sources["ifs-hres"]; if(!src) continue;
-    const m=ensMean(src.filter(tr=>tr.t[0]===0).map(tr=>({lat:tr.lat[0],lon:tr.lon[0]}))); if(!m) continue;
-    const d=M.haversine(p.lat,p.lon,m.lat,m.lon); if(d<bd){ bd=d; best=x; }
-  }
+  for(const x of entry.storms){ if(!x.start) continue;
+    const d=M.haversine(p.lat,p.lon,x.start[0],x.start[1]); if(d<bd){ bd=d; best=x; } }
   return best?{s:best,how:`Matched by position: ECMWF storm ${best.id} started ${Math.round(bd)} km from ${st.name}.`}:null;
 }
 
@@ -1322,29 +1318,30 @@ async function ensForStorm(st){
   if(!st||!st.live){ ensMsg("ECMWF forecast tracks are only shown for storms that are active now. Choose a live storm on the Storm tab."); return; }
   const ix=E.index;
   if(!ix||!ix.runs||!ix.runs.length){ ensMsg(ix?"ECMWF has no storm track files from the last few days, so there are no forecast tracks to show.":"ECMWF forecast tracks aren’t available yet. The data feed may not have run."); return; }
-  ensMsg(`Looking for ${st.name} in ECMWF’s forecasts…`);
   const nm=normName(st.name);
   const entry=ix.runs.find(r=>r.storms.some(x=>!hasDigit(x.name)&&normName(x.name)===nm))||ix.runs[0];
-  const doc=await ensRunDoc(entry.id); if(seq!==E.seq) return;
-  const m=ensMatch(st,doc);
+  const m=ensMatch(st,entry);
   if(!m){ ensMsg(`ECMWF’s latest forecasts don’t include a storm that matches ${st.name}.`); return; }
-  E.key={id:m.s.id,name:normName(m.s.name),genesis:!!m.s.genesis,run:entry.id}; E.how=m.how;
-  const runs=ix.runs.filter(r=>r.id===entry.id||r.storms.some(x=>(!E.key.genesis&&!x.genesis&&x.id===E.key.id)||(!hasDigit(x.name)&&normName(x.name)===E.key.name)));
+  E.key={id:m.s.id,name:normName(m.s.name)}; E.how=m.how;
+  const runs=ix.runs.filter(r=>r.storms.some(x=>x.id===E.key.id||(!hasDigit(x.name)&&normName(x.name)===E.key.name)));
   $('ensRun').innerHTML=runs.map((r,i)=>`<option value="${r.id}">${fmtUTC(Date.parse(r.run))}${i===0?" (newest)":""}</option>`).join("");
   $('ensRun').value=entry.id;
   await ensSelectRun(entry.id,seq);
 }
 async function ensSelectRun(id,seq){
   const E=S.ens; seq=seq||++E.seq; ensStop();
-  const doc=await ensRunDoc(id); if(seq!==E.seq) return;
-  // developing systems (IDs 70+) are renumbered each run, so only trust their ID in the run they were matched in
-  const st=doc&&(doc.storms.find(x=>x.id===E.key.id&&(!E.key.genesis||id===E.key.run))||doc.storms.find(x=>!hasDigit(x.name)&&normName(x.name)===E.key.name));
-  if(!st){ ensMsg("This ECMWF forecast doesn’t include the storm."); return; }
+  const entry=E.index.runs.find(r=>r.id===id);
+  const ref=entry&&(entry.storms.find(x=>x.id===E.key.id)||entry.storms.find(x=>!hasDigit(x.name)&&normName(x.name)===E.key.name));
+  if(!ref){ ensMsg("This ECMWF forecast doesn’t include the storm."); return; }
+  ensMsg(`Loading ECMWF’s forecasts for ${S.storm.name}…`);
+  const st=await ensStormDoc(ref.file); if(seq!==E.seq) return;
+  if(!st){ ensMsg("Couldn’t load this ECMWF forecast."); return; }
   ensLines.removeAll(); ensDots.removeAll();
-  E.doc=doc; E.s=st; E.run=Date.parse(doc.run);
+  E.s=st; E.run=Date.parse(st.run||entry.run);
   ensBuild();
   const nI=(st.sources["ifs-ens"]||[]).length, nA=(st.sources["aifs-ens"]||[]).length;
-  $('ensStatus').textContent=`ECMWF is tracking ${S.storm.name}: ${nI} IFS and ${nA} AIFS forecasts. Official forecast issued ${S.storm.adv?fmtUTC(S.storm.adv):"(time not given)"}.`;
+  const dev=entry.developing?` ECMWF is also watching ${entry.developing} developing systems that have no name yet.`:"";
+  $('ensStatus').textContent=`ECMWF is tracking ${S.storm.name}: ${nI} IFS and ${nA} AIFS forecasts. Official forecast issued ${S.storm.adv?fmtUTC(S.storm.adv):"(time not given)"}.${dev}`;
   $('ensHow').textContent=E.how;
   $('ensBox').hidden=false;
   E.hold=false; ensSetTime(S.t,true);
@@ -1354,7 +1351,8 @@ function ensBuild(){
   const E=S.ens, src=E.s.sources||{};
   if(!(src[E.model]&&src[E.model].length)) E.model=(src["ifs-ens"]&&src["ifs-ens"].length)?"ifs-ens":(src["aifs-ens"]&&src["aifs-ens"].length)?"aifs-ens":"ifs-ens";
   E.tracks=(src[E.model]||[]).map(tr=>ensPrep(tr,E.run));
-  E.hres=(E.model==="ifs-ens"&&src["ifs-hres"]&&src["ifs-hres"][0])?ensPrep(src["ifs-hres"][0],E.run):null;
+  const main=(E.model==="ifs-ens"&&src["ifs-hres"]&&src["ifs-hres"][0])||(src[E.model]||[]).find(tr=>tr.role==="control");
+  E.hres=main?ensPrep(main,E.run):null; // the unperturbed "main" forecast
   E.maxT=Math.max(E.run+H3,...E.tracks.map(k=>k.T[k.T.length-1]),E.hres?E.hres.T[E.hres.T.length-1]:0);
   const pts=[];
   for(let t=E.run;t<=E.maxT;t+=6*H3){ const ps=E.tracks.map(k=>ensPos(k,t)).filter(Boolean); if(ps.length>=ensNeed()) pts.push(ensMean(ps)); else if(pts.length) break; }
@@ -1400,10 +1398,10 @@ function ensSetTime(t,force){
   } else {
     const spread=mean&&ps.length>1?ps.reduce((a,p)=>a+M.haversine(p.lat,p.lon,mean.lat,mean.lon),0)/ps.length:null;
     const ref=mean||(n?null:hp), gap=off&&ref?M.haversine(off.lat,off.lon,ref.lat,ref.lon):null;
-    $('eAlive').innerHTML=n?`${ps.length} <small>of ${n}</small>`:"<small>high-detail forecast only</small>";
+    $('eAlive').innerHTML=n?`${ps.length} <small>of ${n}</small>`:"<small>main forecast only</small>";
     $('eSpread').innerHTML=spread!=null?kmMi(spread):"<small>too few forecasts</small>";
     $('eGap').innerHTML=gap!=null?`${kmMi(gap)} <small>apart</small>`:`<small>${!off?"The official forecast doesn’t reach this time":"No ECMWF average at this time"}</small>`;
-    say=n?`At ${fmtUTC(t)}, ${ps.length} of ${n} ECMWF forecasts still show ${nm}.`:`At ${fmtUTC(t)}, ECMWF’s high-detail forecast ${hp?"still shows":"no longer shows"} ${nm}.`;
+    say=n?`At ${fmtUTC(t)}, ${ps.length} of ${n} ECMWF forecasts still show ${nm}.`:`At ${fmtUTC(t)}, ECMWF’s main forecast ${hp?"still shows":"no longer shows"} ${nm}.`;
     if(spread!=null) say+=` They are spread about ${kmMiTxt(spread)} around their average.`;
     if(gap!=null) say+=off.fc?` The official forecast puts the centre ${kmMiTxt(gap)} from that average.`:` The storm was really ${kmMiTxt(gap)} from that average.`;
   }
