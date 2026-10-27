@@ -1,8 +1,80 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-26T21:31Z",
- "latest": "2026102612",
+ "updated": "2026-10-27T09:09Z",
+ "latest": "2026102700",
  "runs": [
+  {
+   "id": "2026102700",
+   "run": "2026-10-27T00:00Z",
+   "decoder": "1.1",
+   "developing": 50,
+   "storms": [
+    {
+     "id": "02B",
+     "name": "ARNAB",
+     "basin": "B",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      15.75,
+      84.73
+     ],
+     "file": "runs/2026102700/02B.json",
+     "kb": 32,
+     "wx": "wx/2026102700/02B/meta.json"
+    },
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      14.26,
+      162.24
+     ],
+     "file": "runs/2026102700/37W.json",
+     "kb": 108,
+     "wx": "wx/2026102700/37W/meta.json"
+    },
+    {
+     "id": "22E",
+     "name": "VANCE",
+     "basin": "E",
+     "n": {
+      "ifs-ens": 44,
+      "aifs-ens": 42
+     },
+     "start": [
+      15.2,
+      -106.3
+     ],
+     "file": "runs/2026102700/22E.json",
+     "kb": 20,
+     "wx": "wx/2026102700/22E/meta.json"
+    },
+    {
+     "id": "03C",
+     "name": "OLANA",
+     "basin": "C",
+     "n": {
+      "ifs-ens": 20,
+      "aifs-ens": 22
+     },
+     "start": [
+      13.05,
+      -176.17
+     ],
+     "file": "runs/2026102700/03C.json",
+     "kb": 9,
+     "wx": "wx/2026102700/03C/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026102612",
    "run": "2026-10-26T12:00Z",
@@ -77,13 +149,13 @@
   }
  ],
  "status": {
-  "checked": "2026-10-26T21:29Z",
+  "checked": "2026-10-27T09:07Z",
   "ok": true,
-  "message": "Newest run 2026102612 processed",
-  "wx": "Weather maps for run 2026102612: 4 of 4 storms"
+  "message": "Newest run 2026102700 processed",
+  "wx": "Weather maps for run 2026102700: 4 of 4 storms"
  },
  "wx": {
-  "run": "2026102612",
+  "run": "2026102700",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },

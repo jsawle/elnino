@@ -1,0 +1,79 @@
+{
+ "run": "2026-10-27T00:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261027/00z/ifs/0p25/enfo/20261027000000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261027/00z/aifs-ens/0p25/enfo/20261027000000-360h-enfo-tf.bufr"
+ },
+ "developing": 50,
+ "storms": [
+  {
+   "id": "02B",
+   "name": "ARNAB",
+   "basin": "B",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    15.75,
+    84.73
+   ],
+   "file": "runs/2026102700/02B.json",
+   "kb": 32,
+   "wx": "wx/2026102700/02B/meta.json"
+  },
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    14.26,
+    162.24
+   ],
+   "file": "runs/2026102700/37W.json",
+   "kb": 108,
+   "wx": "wx/2026102700/37W/meta.json"
+  },
+  {
+   "id": "22E",
+   "name": "VANCE",
+   "basin": "E",
+   "n": {
+    "ifs-ens": 44,
+    "aifs-ens": 42
+   },
+   "start": [
+    15.2,
+    -106.3
+   ],
+   "file": "runs/2026102700/22E.json",
+   "kb": 20,
+   "wx": "wx/2026102700/22E/meta.json"
+  },
+  {
+   "id": "03C",
+   "name": "OLANA",
+   "basin": "C",
+   "n": {
+    "ifs-ens": 20,
+    "aifs-ens": 22
+   },
+   "start": [
+    13.05,
+    -176.17
+   ],
+   "file": "runs/2026102700/03C.json",
+   "kb": 9,
+   "wx": "wx/2026102700/03C/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 4
+ }
+}
