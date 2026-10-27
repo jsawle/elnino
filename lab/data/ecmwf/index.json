@@ -1,8 +1,80 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-27T09:09Z",
- "latest": "2026102700",
+ "updated": "2026-10-27T22:24Z",
+ "latest": "2026102712",
  "runs": [
+  {
+   "id": "2026102712",
+   "run": "2026-10-27T12:00Z",
+   "decoder": "1.1",
+   "developing": 59,
+   "storms": [
+    {
+     "id": "02B",
+     "name": "ARNAB",
+     "basin": "B",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      16.23,
+      82.95
+     ],
+     "file": "runs/2026102712/02B.json",
+     "kb": 29,
+     "wx": "wx/2026102712/02B/meta.json"
+    },
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      14.58,
+      161.6
+     ],
+     "file": "runs/2026102712/37W.json",
+     "kb": 106,
+     "wx": "wx/2026102712/37W/meta.json"
+    },
+    {
+     "id": "22E",
+     "name": "VANCE",
+     "basin": "E",
+     "n": {
+      "ifs-ens": 28,
+      "aifs-ens": 17
+     },
+     "start": [
+      16.09,
+      -107.12
+     ],
+     "file": "runs/2026102712/22E.json",
+     "kb": 9,
+     "wx": "wx/2026102712/22E/meta.json"
+    },
+    {
+     "id": "03C",
+     "name": "OLANA",
+     "basin": "C",
+     "n": {
+      "ifs-ens": 28,
+      "aifs-ens": 34
+     },
+     "start": [
+      13.18,
+      -174.63
+     ],
+     "file": "runs/2026102712/03C.json",
+     "kb": 13,
+     "wx": "wx/2026102712/03C/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026102700",
    "run": "2026-10-27T00:00Z",
@@ -149,13 +221,13 @@
   }
  ],
  "status": {
-  "checked": "2026-10-27T09:07Z",
+  "checked": "2026-10-27T22:21Z",
   "ok": true,
-  "message": "Newest run 2026102700 processed",
-  "wx": "Weather maps for run 2026102700: 4 of 4 storms"
+  "message": "Newest run 2026102712 processed",
+  "wx": "Weather maps for run 2026102712: 4 of 4 storms"
  },
  "wx": {
-  "run": "2026102700",
+  "run": "2026102712",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
