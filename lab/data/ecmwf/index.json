@@ -1,8 +1,48 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-28T20:22Z",
- "latest": "2026102812",
+ "updated": "2026-10-29T10:09Z",
+ "latest": "2026102900",
  "runs": [
+  {
+   "id": "2026102900",
+   "run": "2026-10-29T00:00Z",
+   "decoder": "1.1",
+   "developing": 56,
+   "storms": [
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      15.8,
+      154.6
+     ],
+     "file": "runs/2026102900/37W.json",
+     "kb": 96,
+     "wx": "wx/2026102900/37W/meta.json"
+    },
+    {
+     "id": "22E",
+     "name": "VANCE",
+     "basin": "E",
+     "n": {
+      "ifs-ens": 15,
+      "aifs-ens": 4
+     },
+     "start": [
+      20.76,
+      -108.67
+     ],
+     "file": "runs/2026102900/22E.json",
+     "kb": 3,
+     "wx": "wx/2026102900/22E/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026102812",
    "run": "2026-10-28T12:00Z",
@@ -333,13 +373,13 @@
   }
  ],
  "status": {
-  "checked": "2026-10-28T20:20Z",
+  "checked": "2026-10-29T10:07Z",
   "ok": true,
-  "message": "Newest run 2026102812 processed",
-  "wx": "Weather maps for run 2026102812: 3 of 3 storms"
+  "message": "Newest run 2026102900 processed",
+  "wx": "Weather maps for run 2026102900: 2 of 2 storms"
  },
  "wx": {
-  "run": "2026102812",
+  "run": "2026102900",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },

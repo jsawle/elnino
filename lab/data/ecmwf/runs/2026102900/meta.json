@@ -1,0 +1,47 @@
+{
+ "run": "2026-10-29T00:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261029/00z/ifs/0p25/enfo/20261029000000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261029/00z/aifs-ens/0p25/enfo/20261029000000-360h-enfo-tf.bufr"
+ },
+ "developing": 56,
+ "storms": [
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    15.8,
+    154.6
+   ],
+   "file": "runs/2026102900/37W.json",
+   "kb": 96,
+   "wx": "wx/2026102900/37W/meta.json"
+  },
+  {
+   "id": "22E",
+   "name": "VANCE",
+   "basin": "E",
+   "n": {
+    "ifs-ens": 15,
+    "aifs-ens": 4
+   },
+   "start": [
+    20.76,
+    -108.67
+   ],
+   "file": "runs/2026102900/22E.json",
+   "kb": 3,
+   "wx": "wx/2026102900/22E/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
