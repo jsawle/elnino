@@ -1,8 +1,32 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-30T01:09Z",
- "latest": "2026102912",
+ "updated": "2026-10-30T10:12Z",
+ "latest": "2026103000",
  "runs": [
+  {
+   "id": "2026103000",
+   "run": "2026-10-30T00:00Z",
+   "decoder": "1.1",
+   "developing": 51,
+   "storms": [
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      17.63,
+      147.67
+     ],
+     "file": "runs/2026103000/37W.json",
+     "kb": 66,
+     "wx": "wx/2026103000/37W/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026102912",
    "run": "2026-10-29T12:00Z",
@@ -429,13 +453,13 @@
   }
  ],
  "status": {
-  "checked": "2026-10-30T01:07Z",
+  "checked": "2026-10-30T10:09Z",
   "ok": true,
-  "message": "Newest run 2026102912 processed",
-  "wx": "Weather maps for run 2026102912: 3 of 3 storms"
+  "message": "Newest run 2026103000 processed",
+  "wx": "Weather maps for run 2026103000: 1 of 1 storms"
  },
  "wx": {
-  "run": "2026102912",
+  "run": "2026103000",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
