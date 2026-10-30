@@ -1,8 +1,32 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-30T10:12Z",
- "latest": "2026103000",
+ "updated": "2026-10-30T22:29Z",
+ "latest": "2026103012",
  "runs": [
+  {
+   "id": "2026103012",
+   "run": "2026-10-30T12:00Z",
+   "decoder": "1.1",
+   "developing": 53,
+   "storms": [
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      19.49,
+      144.64
+     ],
+     "file": "runs/2026103012/37W.json",
+     "kb": 67,
+     "wx": "wx/2026103012/37W/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026103000",
    "run": "2026-10-30T00:00Z",
@@ -378,88 +402,16 @@
      "wx": "wx/2026102700/03C/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026102612",
-   "run": "2026-10-26T12:00Z",
-   "decoder": "1.1",
-   "developing": 53,
-   "storms": [
-    {
-     "id": "02B",
-     "name": "ARNAB",
-     "basin": "B",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      15.74,
-      87.04
-     ],
-     "file": "runs/2026102612/02B.json",
-     "kb": 36,
-     "wx": "wx/2026102612/02B/meta.json"
-    },
-    {
-     "id": "22E",
-     "name": "VANCE",
-     "basin": "E",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 50
-     },
-     "start": [
-      15.26,
-      -105.52
-     ],
-     "file": "runs/2026102612/22E.json",
-     "kb": 27,
-     "wx": "wx/2026102612/22E/meta.json"
-    },
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      14.11,
-      162.83
-     ],
-     "file": "runs/2026102612/37W.json",
-     "kb": 108,
-     "wx": "wx/2026102612/37W/meta.json"
-    },
-    {
-     "id": "03C",
-     "name": "OLANA",
-     "basin": "C",
-     "n": {
-      "ifs-ens": 33,
-      "aifs-ens": 35
-     },
-     "start": [
-      14.07,
-      -176.73
-     ],
-     "file": "runs/2026102612/03C.json",
-     "kb": 15,
-     "wx": "wx/2026102612/03C/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-10-30T10:09Z",
+  "checked": "2026-10-30T22:27Z",
   "ok": true,
-  "message": "Newest run 2026103000 processed",
-  "wx": "Weather maps for run 2026103000: 1 of 1 storms"
+  "message": "Newest run 2026103012 processed",
+  "wx": "Weather maps for run 2026103012: 1 of 1 storms"
  },
  "wx": {
-  "run": "2026103000",
+  "run": "2026103012",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
