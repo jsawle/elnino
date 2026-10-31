@@ -1,8 +1,31 @@
 {
  "decoder": "1.1",
- "updated": "2026-10-31T12:45Z",
- "latest": "2026103100",
+ "updated": "2026-10-31T19:21Z",
+ "latest": "2026103112",
  "runs": [
+  {
+   "id": "2026103112",
+   "run": "2026-10-31T12:00Z",
+   "decoder": "1.1",
+   "developing": 55,
+   "storms": [
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      22.64,
+      143.14
+     ],
+     "file": "runs/2026103112/37W.json",
+     "kb": 65
+    }
+   ]
+  },
   {
    "id": "2026103100",
    "run": "2026-10-31T00:00Z",
@@ -282,91 +305,15 @@
      "wx": "wx/2026102800/22E/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026102712",
-   "run": "2026-10-27T12:00Z",
-   "decoder": "1.1",
-   "developing": 59,
-   "storms": [
-    {
-     "id": "02B",
-     "name": "ARNAB",
-     "basin": "B",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      16.23,
-      82.95
-     ],
-     "file": "runs/2026102712/02B.json",
-     "kb": 29,
-     "wx": "wx/2026102712/02B/meta.json"
-    },
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      14.58,
-      161.6
-     ],
-     "file": "runs/2026102712/37W.json",
-     "kb": 106,
-     "wx": "wx/2026102712/37W/meta.json"
-    },
-    {
-     "id": "22E",
-     "name": "VANCE",
-     "basin": "E",
-     "n": {
-      "ifs-ens": 28,
-      "aifs-ens": 17
-     },
-     "start": [
-      16.09,
-      -107.12
-     ],
-     "file": "runs/2026102712/22E.json",
-     "kb": 9,
-     "wx": "wx/2026102712/22E/meta.json"
-    },
-    {
-     "id": "03C",
-     "name": "OLANA",
-     "basin": "C",
-     "n": {
-      "ifs-ens": 28,
-      "aifs-ens": 34
-     },
-     "start": [
-      13.18,
-      -174.63
-     ],
-     "file": "runs/2026102712/03C.json",
-     "kb": 13,
-     "wx": "wx/2026102712/03C/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-10-31T12:43Z",
+  "checked": "2026-10-31T19:21Z",
   "ok": true,
-  "message": "Newest run 2026103100 processed",
-  "wx": "Weather maps for run 2026103100: 1 of 1 storms"
+  "message": "Newest run 2026103112 processed",
+  "wx": "Weather maps failed: weather download failed: 404 Client Error: Not Found for url: https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/20261031/12z/ifs/0p25/oper/20261031120000-0h-oper-fc.index"
  },
- "wx": {
-  "run": "2026103100",
-  "version": "1.0",
-  "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
- },
+ "wx": null,
  "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
  "licence": "https://creativecommons.org/licenses/by/4.0/"
 }

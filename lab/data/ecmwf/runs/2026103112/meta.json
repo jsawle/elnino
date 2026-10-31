@@ -1,0 +1,26 @@
+{
+ "run": "2026-10-31T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261031/12z/ifs/0p25/enfo/20261031120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261031/12z/aifs-ens/0p25/enfo/20261031120000-360h-enfo-tf.bufr"
+ },
+ "developing": 55,
+ "storms": [
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    22.64,
+    143.14
+   ],
+   "file": "runs/2026103112/37W.json",
+   "kb": 65
+  }
+ ]
+}
