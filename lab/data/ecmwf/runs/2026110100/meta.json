@@ -1,0 +1,47 @@
+{
+ "run": "2026-11-01T00:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261101/00z/ifs/0p25/enfo/20261101000000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261101/00z/aifs-ens/0p25/enfo/20261101000000-360h-enfo-tf.bufr"
+ },
+ "developing": 55,
+ "storms": [
+  {
+   "id": "04B",
+   "name": "04B",
+   "basin": "B",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    11.5,
+    86.38
+   ],
+   "file": "runs/2026110100/04B.json",
+   "kb": 40,
+   "wx": "wx/2026110100/04B/meta.json"
+  },
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    22.73,
+    144.11
+   ],
+   "file": "runs/2026110100/37W.json",
+   "kb": 58,
+   "wx": "wx/2026110100/37W/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
