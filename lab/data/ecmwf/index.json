@@ -1,8 +1,48 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-01T19:47Z",
- "latest": "2026110112",
+ "updated": "2026-11-02T11:24Z",
+ "latest": "2026110200",
  "runs": [
+  {
+   "id": "2026110200",
+   "run": "2026-11-02T00:00Z",
+   "decoder": "1.1",
+   "developing": 57,
+   "storms": [
+    {
+     "id": "04B",
+     "name": "MURASU",
+     "basin": "B",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      13.79,
+      81.32
+     ],
+     "file": "runs/2026110200/04B.json",
+     "kb": 28,
+     "wx": "wx/2026110200/04B/meta.json"
+    },
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      22.28,
+      141.64
+     ],
+     "file": "runs/2026110200/37W.json",
+     "kb": 49,
+     "wx": "wx/2026110200/37W/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026110112",
    "run": "2026-11-01T12:00Z",
@@ -234,56 +274,16 @@
      "wx": "wx/2026102912/22E/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026102900",
-   "run": "2026-10-29T00:00Z",
-   "decoder": "1.1",
-   "developing": 56,
-   "storms": [
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      15.8,
-      154.6
-     ],
-     "file": "runs/2026102900/37W.json",
-     "kb": 96,
-     "wx": "wx/2026102900/37W/meta.json"
-    },
-    {
-     "id": "22E",
-     "name": "VANCE",
-     "basin": "E",
-     "n": {
-      "ifs-ens": 15,
-      "aifs-ens": 4
-     },
-     "start": [
-      20.76,
-      -108.67
-     ],
-     "file": "runs/2026102900/22E.json",
-     "kb": 3,
-     "wx": "wx/2026102900/22E/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-01T19:44Z",
+  "checked": "2026-11-02T11:22Z",
   "ok": true,
-  "message": "Newest run 2026110112 processed",
-  "wx": "Weather maps for run 2026110112: 2 of 2 storms"
+  "message": "Newest run 2026110200 processed",
+  "wx": "Weather maps for run 2026110200: 2 of 2 storms"
  },
  "wx": {
-  "run": "2026110112",
+  "run": "2026110200",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
