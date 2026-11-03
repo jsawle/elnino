@@ -1,0 +1,47 @@
+{
+ "run": "2026-11-03T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261103/12z/ifs/0p25/enfo/20261103120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261103/12z/aifs-ens/0p25/enfo/20261103120000-360h-enfo-tf.bufr"
+ },
+ "developing": 62,
+ "storms": [
+  {
+   "id": "37W",
+   "name": "IN-FA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    23.18,
+    138.79
+   ],
+   "file": "runs/2026110312/37W.json",
+   "kb": 37,
+   "wx": "wx/2026110312/37W/meta.json"
+  },
+  {
+   "id": "04B",
+   "name": "MURASU",
+   "basin": "B",
+   "n": {
+    "ifs-ens": 49,
+    "aifs-ens": 29
+   },
+   "start": [
+    15.9,
+    79.99
+   ],
+   "file": "runs/2026110312/04B.json",
+   "kb": 13,
+   "wx": "wx/2026110312/04B/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
