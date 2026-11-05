@@ -1,8 +1,32 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-04T23:46Z",
- "latest": "2026110412",
+ "updated": "2026-11-05T17:30Z",
+ "latest": "2026110500",
  "runs": [
+  {
+   "id": "2026110500",
+   "run": "2026-11-05T00:00Z",
+   "decoder": "1.1",
+   "developing": 57,
+   "storms": [
+    {
+     "id": "37W",
+     "name": "IN-FA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      28.09,
+      139.73
+     ],
+     "file": "runs/2026110500/37W.json",
+     "kb": 22,
+     "wx": "wx/2026110500/37W/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026110412",
    "run": "2026-11-04T12:00Z",
@@ -265,56 +289,16 @@
      "wx": "wx/2026110112/37W/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026110100",
-   "run": "2026-11-01T00:00Z",
-   "decoder": "1.1",
-   "developing": 55,
-   "storms": [
-    {
-     "id": "04B",
-     "name": "04B",
-     "basin": "B",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      11.5,
-      86.38
-     ],
-     "file": "runs/2026110100/04B.json",
-     "kb": 40,
-     "wx": "wx/2026110100/04B/meta.json"
-    },
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      22.73,
-      144.11
-     ],
-     "file": "runs/2026110100/37W.json",
-     "kb": 58,
-     "wx": "wx/2026110100/37W/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-04T23:44Z",
+  "checked": "2026-11-05T17:27Z",
   "ok": true,
-  "message": "Newest run 2026110412 processed",
-  "wx": "Weather maps for run 2026110412: 1 of 1 storms"
+  "message": "Newest run 2026110500 processed",
+  "wx": "Weather maps for run 2026110500: 1 of 1 storms"
  },
  "wx": {
-  "run": "2026110412",
+  "run": "2026110500",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
