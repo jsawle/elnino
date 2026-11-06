@@ -1,0 +1,47 @@
+{
+ "run": "2026-11-06T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261106/12z/ifs/0p25/enfo/20261106120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261106/12z/aifs-ens/0p25/enfo/20261106120000-360h-enfo-tf.bufr"
+ },
+ "developing": 65,
+ "storms": [
+  {
+   "id": "02S",
+   "name": "02S",
+   "basin": "S",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    -13.4,
+    55.36
+   ],
+   "file": "runs/2026110612/02S.json",
+   "kb": 41,
+   "wx": "wx/2026110612/02S/meta.json"
+  },
+  {
+   "id": "38W",
+   "name": "38W",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    17.69,
+    147.58
+   ],
+   "file": "runs/2026110612/38W.json",
+   "kb": 57,
+   "wx": "wx/2026110612/38W/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
