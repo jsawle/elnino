@@ -1,0 +1,63 @@
+{
+ "run": "2026-11-07T00:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261107/00z/ifs/0p25/enfo/20261107000000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261107/00z/aifs-ens/0p25/enfo/20261107000000-360h-enfo-tf.bufr"
+ },
+ "developing": 60,
+ "storms": [
+  {
+   "id": "02S",
+   "name": "02S",
+   "basin": "S",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 49
+   },
+   "start": [
+    -13.19,
+    54.0
+   ],
+   "file": "runs/2026110700/02S.json",
+   "kb": 33,
+   "wx": "wx/2026110700/02S/meta.json"
+  },
+  {
+   "id": "38W",
+   "name": "38W",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    19.15,
+    144.29
+   ],
+   "file": "runs/2026110700/38W.json",
+   "kb": 50,
+   "wx": "wx/2026110700/38W/meta.json"
+  },
+  {
+   "id": "04C",
+   "name": "PENA",
+   "basin": "C",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    11.69,
+    -150.94
+   ],
+   "file": "runs/2026110700/04C.json",
+   "kb": 97,
+   "wx": "wx/2026110700/04C/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 3
+ }
+}
