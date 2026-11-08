@@ -1,6 +1,6 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-07T19:29Z",
+ "updated": "2026-11-08T00:45Z",
  "latest": "2026110712",
  "runs": [
   {
@@ -22,7 +22,8 @@
       53.26
      ],
      "file": "runs/2026110712/02S.json",
-     "kb": 30
+     "kb": 30,
+     "wx": "wx/2026110712/02S/meta.json"
     },
     {
      "id": "38W",
@@ -37,7 +38,8 @@
       141.61
      ],
      "file": "runs/2026110712/38W.json",
-     "kb": 45
+     "kb": 45,
+     "wx": "wx/2026110712/38W/meta.json"
     },
     {
      "id": "04C",
@@ -52,7 +54,8 @@
       -153.24
      ],
      "file": "runs/2026110712/04C.json",
-     "kb": 80
+     "kb": 80,
+     "wx": "wx/2026110712/04C/meta.json"
     }
    ]
   },
@@ -305,12 +308,16 @@
   }
  ],
  "status": {
-  "checked": "2026-11-07T19:28Z",
+  "checked": "2026-11-08T00:43Z",
   "ok": true,
   "message": "Newest run 2026110712 processed",
-  "wx": "Weather maps failed: weather download failed: 404 Client Error: Not Found for url: https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/20261107/12z/ifs/0p25/oper/20261107120000-0h-oper-fc.index"
+  "wx": "Weather maps for run 2026110712: 3 of 3 storms"
  },
- "wx": null,
+ "wx": {
+  "run": "2026110712",
+  "version": "1.0",
+  "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
+ },
  "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
  "licence": "https://creativecommons.org/licenses/by/4.0/"
 }
