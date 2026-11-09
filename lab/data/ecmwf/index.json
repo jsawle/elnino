@@ -1,8 +1,64 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-08T22:16Z",
- "latest": "2026110812",
+ "updated": "2026-11-09T19:55Z",
+ "latest": "2026110912",
  "runs": [
+  {
+   "id": "2026110912",
+   "run": "2026-11-09T12:00Z",
+   "decoder": "1.1",
+   "developing": 68,
+   "storms": [
+    {
+     "id": "04C",
+     "name": "PENA",
+     "basin": "C",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      11.57,
+      -159.33
+     ],
+     "file": "runs/2026110912/04C.json",
+     "kb": 63,
+     "wx": "wx/2026110912/04C/meta.json"
+    },
+    {
+     "id": "38W",
+     "name": "CEMPAKA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      24.18,
+      135.32
+     ],
+     "file": "runs/2026110912/38W.json",
+     "kb": 28,
+     "wx": "wx/2026110912/38W/meta.json"
+    },
+    {
+     "id": "03S",
+     "name": "03S",
+     "basin": "S",
+     "n": {
+      "ifs-ens": 26,
+      "aifs-ens": 23
+     },
+     "start": [
+      -10.38,
+      48.73
+     ],
+     "file": "runs/2026110912/03S.json",
+     "kb": 8,
+     "wx": "wx/2026110912/03S/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026110812",
    "run": "2026-11-08T12:00Z",
@@ -330,40 +386,16 @@
      "wx": "wx/2026110512/37W/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026110500",
-   "run": "2026-11-05T00:00Z",
-   "decoder": "1.1",
-   "developing": 57,
-   "storms": [
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      28.09,
-      139.73
-     ],
-     "file": "runs/2026110500/37W.json",
-     "kb": 22,
-     "wx": "wx/2026110500/37W/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-08T22:14Z",
+  "checked": "2026-11-09T19:53Z",
   "ok": true,
-  "message": "Newest run 2026110812 processed",
-  "wx": "Weather maps for run 2026110812: 3 of 3 storms"
+  "message": "Newest run 2026110912 processed",
+  "wx": "Weather maps for run 2026110912: 3 of 3 storms"
  },
  "wx": {
-  "run": "2026110812",
+  "run": "2026110912",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
