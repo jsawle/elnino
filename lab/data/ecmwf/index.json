@@ -1,8 +1,63 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-09T19:55Z",
- "latest": "2026110912",
+ "updated": "2026-11-10T15:02Z",
+ "latest": "2026111000",
  "runs": [
+  {
+   "id": "2026111000",
+   "run": "2026-11-10T00:00Z",
+   "decoder": "1.1",
+   "developing": 64,
+   "storms": [
+    {
+     "id": "38W",
+     "name": "CEMPAKA",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      24.69,
+      137.8
+     ],
+     "file": "runs/2026111000/38W.json",
+     "kb": 23,
+     "wx": "wx/2026111000/38W/meta.json"
+    },
+    {
+     "id": "04C",
+     "name": "PENA",
+     "basin": "C",
+     "n": {
+      "ifs-ens": 50,
+      "aifs-ens": 51
+     },
+     "start": [
+      11.73,
+      -161.82
+     ],
+     "file": "runs/2026111000/04C.json",
+     "kb": 65,
+     "wx": "wx/2026111000/04C/meta.json"
+    },
+    {
+     "id": "03S",
+     "name": "03S",
+     "basin": "S",
+     "n": {
+      "aifs-ens": 1
+     },
+     "start": [
+      -8.5,
+      47.8
+     ],
+     "file": "runs/2026111000/03S.json",
+     "kb": 0,
+     "wx": "wx/2026111000/03S/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026110912",
    "run": "2026-11-09T12:00Z",
@@ -346,56 +401,16 @@
      "wx": "wx/2026110600/38W/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026110512",
-   "run": "2026-11-05T12:00Z",
-   "decoder": "1.1",
-   "developing": 63,
-   "storms": [
-    {
-     "id": "02S",
-     "name": "02S",
-     "basin": "S",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 50
-     },
-     "start": [
-      -10.94,
-      58.52
-     ],
-     "file": "runs/2026110512/02S.json",
-     "kb": 49,
-     "wx": "wx/2026110512/02S/meta.json"
-    },
-    {
-     "id": "37W",
-     "name": "IN-FA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      31.74,
-      144.0
-     ],
-     "file": "runs/2026110512/37W.json",
-     "kb": 17,
-     "wx": "wx/2026110512/37W/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-09T19:53Z",
+  "checked": "2026-11-10T14:59Z",
   "ok": true,
-  "message": "Newest run 2026110912 processed",
-  "wx": "Weather maps for run 2026110912: 3 of 3 storms"
+  "message": "Newest run 2026111000 processed",
+  "wx": "Weather maps for run 2026111000: 3 of 3 storms"
  },
  "wx": {
-  "run": "2026110912",
+  "run": "2026111000",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
