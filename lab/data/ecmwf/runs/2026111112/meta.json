@@ -1,0 +1,47 @@
+{
+ "run": "2026-11-11T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261111/12z/ifs/0p25/enfo/20261111120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261111/12z/aifs-ens/0p25/enfo/20261111120000-360h-enfo-tf.bufr"
+ },
+ "developing": 58,
+ "storms": [
+  {
+   "id": "04C",
+   "name": "PENA",
+   "basin": "C",
+   "n": {
+    "ifs-ens": 47,
+    "aifs-ens": 47
+   },
+   "start": [
+    10.12,
+    -167.5
+   ],
+   "file": "runs/2026111112/04C.json",
+   "kb": 39,
+   "wx": "wx/2026111112/04C/meta.json"
+  },
+  {
+   "id": "31W",
+   "name": "CEMPAKA",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 41,
+    "aifs-ens": 37
+   },
+   "start": [
+    29.21,
+    152.89
+   ],
+   "file": "runs/2026111112/31W.json",
+   "kb": 9,
+   "wx": "wx/2026111112/31W/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
