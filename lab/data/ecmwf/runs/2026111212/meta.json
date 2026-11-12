@@ -1,0 +1,31 @@
+{
+ "run": "2026-11-12T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261112/12z/ifs/0p25/enfo/20261112120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261112/12z/aifs-ens/0p25/enfo/20261112120000-360h-enfo-tf.bufr"
+ },
+ "developing": 57,
+ "storms": [
+  {
+   "id": "04C",
+   "name": "PENA",
+   "basin": "C",
+   "n": {
+    "ifs-ens": 28,
+    "aifs-ens": 23
+   },
+   "start": [
+    9.78,
+    -172.81
+   ],
+   "file": "runs/2026111212/04C.json",
+   "kb": 17,
+   "wx": "wx/2026111212/04C/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 1
+ }
+}
