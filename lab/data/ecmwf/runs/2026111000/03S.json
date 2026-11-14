@@ -1,1 +1,0 @@
-{"run":"2026-11-10T00:00Z","decoder":"1.1","id":"03S","name":"03S","basin":"S","genesis":false,"sources":{"aifs-ens":[{"m":1,"role":"member","t":[0,6],"lat":[-8.5,-9.4],"lon":[47.8,48.0],"p":[1011,1014],"w":[21,19]}]},"credit":"Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0"}

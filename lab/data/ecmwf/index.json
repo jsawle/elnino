@@ -1,8 +1,32 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-13T19:50Z",
- "latest": "2026111312",
+ "updated": "2026-11-14T10:39Z",
+ "latest": "2026111400",
  "runs": [
+  {
+   "id": "2026111400",
+   "run": "2026-11-14T00:00Z",
+   "decoder": "1.1",
+   "developing": 59,
+   "storms": [
+    {
+     "id": "39W",
+     "name": "39W",
+     "basin": "W",
+     "n": {
+      "ifs-ens": 2,
+      "aifs-ens": 3
+     },
+     "start": [
+      8.7,
+      178.3
+     ],
+     "file": "runs/2026111400/39W.json",
+     "kb": 3,
+     "wx": "wx/2026111400/39W/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026111312",
    "run": "2026-11-13T12:00Z",
@@ -184,71 +208,16 @@
      "wx": "wx/2026111012/04C/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026111000",
-   "run": "2026-11-10T00:00Z",
-   "decoder": "1.1",
-   "developing": 64,
-   "storms": [
-    {
-     "id": "38W",
-     "name": "CEMPAKA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      24.69,
-      137.8
-     ],
-     "file": "runs/2026111000/38W.json",
-     "kb": 23,
-     "wx": "wx/2026111000/38W/meta.json"
-    },
-    {
-     "id": "04C",
-     "name": "PENA",
-     "basin": "C",
-     "n": {
-      "ifs-ens": 50,
-      "aifs-ens": 51
-     },
-     "start": [
-      11.73,
-      -161.82
-     ],
-     "file": "runs/2026111000/04C.json",
-     "kb": 65,
-     "wx": "wx/2026111000/04C/meta.json"
-    },
-    {
-     "id": "03S",
-     "name": "03S",
-     "basin": "S",
-     "n": {
-      "aifs-ens": 1
-     },
-     "start": [
-      -8.5,
-      47.8
-     ],
-     "file": "runs/2026111000/03S.json",
-     "kb": 0,
-     "wx": "wx/2026111000/03S/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-13T19:50Z",
+  "checked": "2026-11-14T10:37Z",
   "ok": true,
-  "message": "Newest run 2026111312 processed",
-  "wx": "Weather maps for run 2026111312: 0 of 0 storms"
+  "message": "Newest run 2026111400 processed",
+  "wx": "Weather maps for run 2026111400: 1 of 1 storms"
  },
  "wx": {
-  "run": "2026111312",
+  "run": "2026111400",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },

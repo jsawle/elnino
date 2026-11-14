@@ -1,0 +1,31 @@
+{
+ "run": "2026-11-14T00:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261114/00z/ifs/0p25/enfo/20261114000000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261114/00z/aifs-ens/0p25/enfo/20261114000000-360h-enfo-tf.bufr"
+ },
+ "developing": 59,
+ "storms": [
+  {
+   "id": "39W",
+   "name": "39W",
+   "basin": "W",
+   "n": {
+    "ifs-ens": 2,
+    "aifs-ens": 3
+   },
+   "start": [
+    8.7,
+    178.3
+   ],
+   "file": "runs/2026111400/39W.json",
+   "kb": 3,
+   "wx": "wx/2026111400/39W/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 1
+ }
+}
