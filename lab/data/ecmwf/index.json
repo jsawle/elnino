@@ -1,8 +1,32 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-15T16:26Z",
- "latest": "2026111500",
+ "updated": "2026-11-15T22:57Z",
+ "latest": "2026111512",
  "runs": [
+  {
+   "id": "2026111512",
+   "run": "2026-11-15T12:00Z",
+   "decoder": "1.1",
+   "developing": 58,
+   "storms": [
+    {
+     "id": "04P",
+     "name": "XAVIER",
+     "basin": "P",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      -8.29,
+      -159.44
+     ],
+     "file": "runs/2026111512/04P.json",
+     "kb": 118,
+     "wx": "wx/2026111512/04P/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026111500",
    "run": "2026-11-15T00:00Z",
@@ -102,56 +126,16 @@
      "wx": "wx/2026111200/04C/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026111112",
-   "run": "2026-11-11T12:00Z",
-   "decoder": "1.1",
-   "developing": 58,
-   "storms": [
-    {
-     "id": "04C",
-     "name": "PENA",
-     "basin": "C",
-     "n": {
-      "ifs-ens": 47,
-      "aifs-ens": 47
-     },
-     "start": [
-      10.12,
-      -167.5
-     ],
-     "file": "runs/2026111112/04C.json",
-     "kb": 39,
-     "wx": "wx/2026111112/04C/meta.json"
-    },
-    {
-     "id": "31W",
-     "name": "CEMPAKA",
-     "basin": "W",
-     "n": {
-      "ifs-ens": 41,
-      "aifs-ens": 37
-     },
-     "start": [
-      29.21,
-      152.89
-     ],
-     "file": "runs/2026111112/31W.json",
-     "kb": 9,
-     "wx": "wx/2026111112/31W/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-15T16:26Z",
+  "checked": "2026-11-15T22:55Z",
   "ok": true,
-  "message": "Newest run 2026111500 processed",
-  "wx": "Weather maps for run 2026111500: 0 of 0 storms"
+  "message": "Newest run 2026111512 processed",
+  "wx": "Weather maps for run 2026111512: 1 of 1 storms"
  },
  "wx": {
-  "run": "2026111500",
+  "run": "2026111512",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
