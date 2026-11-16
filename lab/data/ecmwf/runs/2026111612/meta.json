@@ -1,0 +1,31 @@
+{
+ "run": "2026-11-16T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261116/12z/ifs/0p25/enfo/20261116120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261116/12z/aifs-ens/0p25/enfo/20261116120000-360h-enfo-tf.bufr"
+ },
+ "developing": 52,
+ "storms": [
+  {
+   "id": "04P",
+   "name": "XAVIER",
+   "basin": "P",
+   "n": {
+    "ifs-ens": 51,
+    "aifs-ens": 51
+   },
+   "start": [
+    -8.73,
+    -161.68
+   ],
+   "file": "runs/2026111612/04P.json",
+   "kb": 96,
+   "wx": "wx/2026111612/04P/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 1
+ }
+}
