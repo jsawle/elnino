@@ -1,8 +1,48 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-17T16:12Z",
- "latest": "2026111700",
+ "updated": "2026-11-18T01:01Z",
+ "latest": "2026111712",
  "runs": [
+  {
+   "id": "2026111712",
+   "run": "2026-11-17T12:00Z",
+   "decoder": "1.1",
+   "developing": 60,
+   "storms": [
+    {
+     "id": "04P",
+     "name": "XAVIER",
+     "basin": "P",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 51
+     },
+     "start": [
+      -9.4,
+      -163.51
+     ],
+     "file": "runs/2026111712/04P.json",
+     "kb": 82,
+     "wx": "wx/2026111712/04P/meta.json"
+    },
+    {
+     "id": "05B",
+     "name": "AKVAN",
+     "basin": "B",
+     "n": {
+      "ifs-ens": 51,
+      "aifs-ens": 50
+     },
+     "start": [
+      12.48,
+      87.57
+     ],
+     "file": "runs/2026111712/05B.json",
+     "kb": 30,
+     "wx": "wx/2026111712/05B/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026111700",
    "run": "2026-11-17T00:00Z",
@@ -135,23 +175,16 @@
    "decoder": "1.1",
    "developing": 62,
    "storms": []
-  },
-  {
-   "id": "2026111300",
-   "run": "2026-11-13T00:00Z",
-   "decoder": "1.1",
-   "developing": 59,
-   "storms": []
   }
  ],
  "status": {
-  "checked": "2026-11-17T16:10Z",
+  "checked": "2026-11-18T00:59Z",
   "ok": true,
-  "message": "Newest run 2026111700 processed",
-  "wx": "Weather maps for run 2026111700: 2 of 2 storms"
+  "message": "Newest run 2026111712 processed",
+  "wx": "Weather maps for run 2026111712: 2 of 2 storms"
  },
  "wx": {
-  "run": "2026111700",
+  "run": "2026111712",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
