@@ -1,6 +1,6 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-21T19:25Z",
+ "updated": "2026-11-22T01:25Z",
  "latest": "2026112112",
  "runs": [
   {
@@ -22,7 +22,8 @@
       -165.11
      ],
      "file": "runs/2026112112/04P.json",
-     "kb": 62
+     "kb": 62,
+     "wx": "wx/2026112112/04P/meta.json"
     },
     {
      "id": "01U",
@@ -37,7 +38,8 @@
       91.23
      ],
      "file": "runs/2026112112/01U.json",
-     "kb": 26
+     "kb": 26,
+     "wx": "wx/2026112112/01U/meta.json"
     }
    ]
   },
@@ -307,12 +309,16 @@
   }
  ],
  "status": {
-  "checked": "2026-11-21T19:24Z",
+  "checked": "2026-11-22T01:24Z",
   "ok": true,
   "message": "Newest run 2026112112 processed",
-  "wx": "Weather maps failed: weather download failed: 503 Server Error: Service Unavailable for url: https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/20261121/12z/ifs/0p25/oper/20261121120000-0h-oper-fc.index"
+  "wx": "Weather maps for run 2026112112: 2 of 2 storms"
  },
- "wx": null,
+ "wx": {
+  "run": "2026112112",
+  "version": "1.0",
+  "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
+ },
  "credit": "Adapted from ECMWF tropical cyclone track forecasts by ECMWF, licensed under CC BY 4.0",
  "licence": "https://creativecommons.org/licenses/by/4.0/"
 }
