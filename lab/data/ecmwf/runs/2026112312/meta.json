@@ -1,0 +1,47 @@
+{
+ "run": "2026-11-23T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261123/12z/ifs/0p25/enfo/20261123120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261123/12z/aifs-ens/0p25/enfo/20261123120000-360h-enfo-tf.bufr"
+ },
+ "developing": 60,
+ "storms": [
+  {
+   "id": "04P",
+   "name": "XAVIER",
+   "basin": "P",
+   "n": {
+    "ifs-ens": 50,
+    "aifs-ens": 48
+   },
+   "start": [
+    -11.96,
+    -168.71
+   ],
+   "file": "runs/2026112312/04P.json",
+   "kb": 54,
+   "wx": "wx/2026112312/04P/meta.json"
+  },
+  {
+   "id": "03S",
+   "name": "03S",
+   "basin": "S",
+   "n": {
+    "ifs-ens": 46,
+    "aifs-ens": 48
+   },
+   "start": [
+    -8.59,
+    77.86
+   ],
+   "file": "runs/2026112312/03S.json",
+   "kb": 39,
+   "wx": "wx/2026112312/03S/meta.json"
+  }
+ ],
+ "wx": {
+  "version": "1.0",
+  "storms": 2
+ }
+}
