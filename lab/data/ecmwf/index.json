@@ -1,8 +1,48 @@
 {
  "decoder": "1.1",
- "updated": "2026-11-24T02:19Z",
- "latest": "2026112312",
+ "updated": "2026-11-24T13:55Z",
+ "latest": "2026112400",
  "runs": [
+  {
+   "id": "2026112400",
+   "run": "2026-11-24T00:00Z",
+   "decoder": "1.1",
+   "developing": 64,
+   "storms": [
+    {
+     "id": "04P",
+     "name": "XAVIER",
+     "basin": "P",
+     "n": {
+      "ifs-ens": 45,
+      "aifs-ens": 48
+     },
+     "start": [
+      -11.78,
+      -169.92
+     ],
+     "file": "runs/2026112400/04P.json",
+     "kb": 48,
+     "wx": "wx/2026112400/04P/meta.json"
+    },
+    {
+     "id": "03S",
+     "name": "03S",
+     "basin": "S",
+     "n": {
+      "ifs-ens": 44,
+      "aifs-ens": 47
+     },
+     "start": [
+      -9.47,
+      78.13
+     ],
+     "file": "runs/2026112400/03S.json",
+     "kb": 28,
+     "wx": "wx/2026112400/03S/meta.json"
+    }
+   ]
+  },
   {
    "id": "2026112312",
    "run": "2026-11-23T12:00Z",
@@ -218,56 +258,16 @@
      "wx": "wx/2026112012/04P/meta.json"
     }
    ]
-  },
-  {
-   "id": "2026112000",
-   "run": "2026-11-20T00:00Z",
-   "decoder": "1.1",
-   "developing": 60,
-   "storms": [
-    {
-     "id": "04P",
-     "name": "XAVIER",
-     "basin": "P",
-     "n": {
-      "ifs-ens": 51,
-      "aifs-ens": 51
-     },
-     "start": [
-      -10.84,
-      -162.84
-     ],
-     "file": "runs/2026112000/04P.json",
-     "kb": 80,
-     "wx": "wx/2026112000/04P/meta.json"
-    },
-    {
-     "id": "05B",
-     "name": "AKVAN",
-     "basin": "B",
-     "n": {
-      "ifs-ens": 1,
-      "aifs-ens": 3
-     },
-     "start": [
-      19.4,
-      85.0
-     ],
-     "file": "runs/2026112000/05B.json",
-     "kb": 1,
-     "wx": "wx/2026112000/05B/meta.json"
-    }
-   ]
   }
  ],
  "status": {
-  "checked": "2026-11-24T02:16Z",
+  "checked": "2026-11-24T13:53Z",
   "ok": true,
-  "message": "Newest run 2026112312 processed",
-  "wx": "Weather maps for run 2026112312: 2 of 2 storms"
+  "message": "Newest run 2026112400 processed",
+  "wx": "Weather maps for run 2026112400: 2 of 2 storms"
  },
  "wx": {
-  "run": "2026112312",
+  "run": "2026112400",
   "version": "1.0",
   "base": "https://raw.githubusercontent.com/jsawle/elnino/lab-weather/"
  },
