@@ -1,0 +1,14 @@
+{
+ "run": "2026-11-26T12:00Z",
+ "decoder": "1.1",
+ "files": {
+  "ifs-ens": "https://data.ecmwf.int/forecasts/20261126/12z/ifs/0p25/enfo/20261126120000-360h-enfo-tf.bufr",
+  "aifs-ens": "https://data.ecmwf.int/forecasts/20261126/12z/aifs-ens/0p25/enfo/20261126120000-360h-enfo-tf.bufr"
+ },
+ "developing": 59,
+ "storms": [],
+ "wx": {
+  "version": "1.0",
+  "storms": 0
+ }
+}
